@@ -83,226 +83,226 @@ output$STRIDE2 <- renderUI({
     # ), # End of bs_add_rules
     nav_spacer(),
     
-    # --- Navigation Panels and Menus ---
-    nav_panel(
-      title = tags$b("Home"),
-      icon = bs_icon("house-door-fill"),
-      value = "home_tab",
-      # <<<--- PASTE YOUR HOME PAGE UI CODE (tagList) HERE --->>>
-      tagList(
-        useShinyjs(),  # Still needed here for this panel's interactivity
-        tags$head(
-          tags$style(HTML("
-    /* =====================================================
-       DEPED COLOR THEME
-       ===================================================== */
-    :root {
-      --deped-blue: #003366;
-      --deped-gold: #FFB81C;
-      --deped-light: #f4f6fa;
-      --deped-white: #ffffff;
-    }
-
-
-
-    /* =====================================================
-       SIDEBAR
-       ===================================================== */
-    .sidebar_erdb {
-      width: 260px;
-      background: var(--deped-blue);
-      color: var(--deped-white);
-      padding: 20px;
-      border-radius: 0 12px 12px 0;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
-      position: sticky;
-      top: 60px; /* Adjust top based on navbar height */
-      height: calc(100vh - 60px); /* Adjust height based on navbar height */
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-
-    .sidebar_erdb h4 {
-      color: var(--deped-gold);
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    /* =====================================================
-       SIDEBAR BUTTONS
-       ===================================================== */
-    .btn-card {
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.15);
-      color: var(--deped-white);
-      border-radius: 10px;
-      text-align: left;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .btn-card:hover,
-    .btn-card:focus {
-      background: var(--deped-gold) !important;
-      color: var(--deped-blue) !important;
-      transform: scale(1.02);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
-
-    .btn-card h5 {
-      display: inline-block;
-      margin-left: 8px;
-      font-size: 1.05rem;
-      font-weight: 600;
-    }
-
-
-
-    /* =====================================================
-       GLOBAL SCROLLBAR
-       ===================================================== */
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background:  #003366;
-      border-radius: 10px;
-    }
-
-
-  "))
-        ),
-        # --- MAIN LAYOUT Div ---
-        div(
-          class = "layout_erdb",
-          # --- SIDEBAR Div ---
-          div(
-            class = "sidebar_erdb",
-            h4("Select Category"),
-            actionButton(
-              "erdb_overview",
-              label = tagList(bs_icon("house", size = 24), tags$h5("Overview")),
-              class = "w-100 btn-card"
-            ),
-            actionButton("erdb_hr", label = tagList(bs_icon("people-fill", size = 24), tags$h5("Human Resource")), class = "btn-card mb-2"), # source: 187
-            actionButton("erdb_school", label = tagList(bs_icon("building", size = 24), tags$h5("Basic Info")), class = "btn-card mb-2"), # source: 187
-            actionButton("erdb_infra", label = tagList(bs_icon("tools", size = 24), tags$h5("Infrastructure")), class = "btn-card mb-2"), # source: 188
-            actionButton("erdb_financial", label = tagList(bs_icon("currency-dollar", size = 24), tags$h5("Financial")), class = "btn-card mb-2"), # source: 188
-            actionButton("erdb_monitoring", label = tagList(bs_icon("graph-up", size = 24), tags$h5("Monitoring")), class = "btn-card mb-2"), # source: 188
-            actionButton("erdb_ppas", label = tagList(bs_icon("clipboard-data", size = 24), tags$h5("PPAs")), class = "btn-card mb-2") # source: 188
-          ), # End Sidebar Div
-          # --- MAIN CONTENT Div ---
-          # div(
-          #   id = "main_erdb_content",
-          #   uiOutput("dynamic_erdb_panel"), # This will render the content based on sidebar clicks
-          #   class = "main-content-erdb"
-          # ) # End Main Content Div
-        ) # End Main Layout Div
-      ) # End tagList for Home content
-    ), # End of Home nav_panel - COMMA is correct here
+  #   # --- Navigation Panels and Menus ---
+  #   nav_panel(
+  #     title = tags$b("Home"),
+  #     icon = bs_icon("house-door-fill"),
+  #     value = "home_tab",
+  #     # <<<--- PASTE YOUR HOME PAGE UI CODE (tagList) HERE --->>>
+  #     tagList(
+  #       useShinyjs(),  # Still needed here for this panel's interactivity
+  #       tags$head(
+  #         tags$style(HTML("
+  #   /* =====================================================
+  #      DEPED COLOR THEME
+  #      ===================================================== */
+  #   :root {
+  #     --deped-blue: #003366;
+  #     --deped-gold: #FFB81C;
+  #     --deped-light: #f4f6fa;
+  #     --deped-white: #ffffff;
+  #   }
+  # 
+  # 
+  # 
+  #   /* =====================================================
+  #      SIDEBAR
+  #      ===================================================== */
+  #   .sidebar_erdb {
+  #     width: 260px;
+  #     background: var(--deped-blue);
+  #     color: var(--deped-white);
+  #     padding: 20px;
+  #     border-radius: 0 12px 12px 0;
+  #     box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  #     position: sticky;
+  #     top: 60px; /* Adjust top based on navbar height */
+  #     height: calc(100vh - 60px); /* Adjust height based on navbar height */
+  #     flex-shrink: 0;
+  #     overflow-y: auto;
+  #   }
+  # 
+  #   .sidebar_erdb h4 {
+  #     color: var(--deped-gold);
+  #     font-weight: 700;
+  #     text-align: center;
+  #     margin-bottom: 20px;
+  #   }
+  # 
+  #   /* =====================================================
+  #      SIDEBAR BUTTONS
+  #      ===================================================== */
+  #   .btn-card {
+  #     background: rgba(255,255,255,0.1);
+  #     border: 1px solid rgba(255,255,255,0.15);
+  #     color: var(--deped-white);
+  #     border-radius: 10px;
+  #     text-align: left;
+  #     padding: 12px 16px;
+  #     display: flex;
+  #     align-items: center;
+  #     width: 100%;
+  #     transition: all 0.2s ease-in-out;
+  #   }
+  # 
+  #   .btn-card:hover,
+  #   .btn-card:focus {
+  #     background: var(--deped-gold) !important;
+  #     color: var(--deped-blue) !important;
+  #     transform: scale(1.02);
+  #     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  #   }
+  # 
+  #   .btn-card h5 {
+  #     display: inline-block;
+  #     margin-left: 8px;
+  #     font-size: 1.05rem;
+  #     font-weight: 600;
+  #   }
+  # 
+  # 
+  # 
+  #   /* =====================================================
+  #      GLOBAL SCROLLBAR
+  #      ===================================================== */
+  #   ::-webkit-scrollbar {
+  #     width: 10px;
+  #   }
+  # 
+  #   ::-webkit-scrollbar-thumb {
+  #     background:  #003366;
+  #     border-radius: 10px;
+  #   }
+  # 
+  # 
+  # "))
+  #       ),
+  #       # --- MAIN LAYOUT Div ---
+  #       div(
+  #         class = "layout_erdb",
+  #         # --- SIDEBAR Div ---
+  #         div(
+  #           class = "sidebar_erdb",
+  #           h4("Select Category"),
+  #           actionButton(
+  #             "erdb_overview",
+  #             label = tagList(bs_icon("house", size = 24), tags$h5("Overview")),
+  #             class = "w-100 btn-card"
+  #           ),
+  #           actionButton("erdb_hr", label = tagList(bs_icon("people-fill", size = 24), tags$h5("Human Resource")), class = "btn-card mb-2"), # source: 187
+  #           actionButton("erdb_school", label = tagList(bs_icon("building", size = 24), tags$h5("Basic Info")), class = "btn-card mb-2"), # source: 187
+  #           actionButton("erdb_infra", label = tagList(bs_icon("tools", size = 24), tags$h5("Infrastructure")), class = "btn-card mb-2"), # source: 188
+  #           actionButton("erdb_financial", label = tagList(bs_icon("currency-dollar", size = 24), tags$h5("Financial")), class = "btn-card mb-2"), # source: 188
+  #           actionButton("erdb_monitoring", label = tagList(bs_icon("graph-up", size = 24), tags$h5("Monitoring")), class = "btn-card mb-2"), # source: 188
+  #           actionButton("erdb_ppas", label = tagList(bs_icon("clipboard-data", size = 24), tags$h5("PPAs")), class = "btn-card mb-2") # source: 188
+  #         ), # End Sidebar Div
+  #         # --- MAIN CONTENT Div ---
+  #         # div(
+  #         #   id = "main_erdb_content",
+  #         #   uiOutput("dynamic_erdb_panel"), # This will render the content based on sidebar clicks
+  #         #   class = "main-content-erdb"
+  #         # ) # End Main Content Div
+  #       ) # End Main Layout Div
+  #     ) # End tagList for Home content
+  #   ), # End of Home nav_panel - COMMA is correct here
     
     nav_menu(
       title = tagList(bs_icon("speedometer"), tags$b("Dashboard")),
       value = "dashboard_menu",
       # Assuming this is inside a larger page_navbar structure
-      nav_panel(
-        title = "Education Resource Dashboard",
-        
-        # --- SIDEBAR + MAIN CONTENT LAYOUT (using bslib::layout_sidebar) ---
-        layout_sidebar(
-          
-          # 1. SIDEBAR CONTENT
-          # The sidebar argument handles the first column (col_widths = 2)
-          sidebar = sidebar(
-            width = 250, # Set a fixed or proportional width for the sidebar
-            class = "sidebar_erdb", # Retain your custom class if needed
-            
-            tags$h4("Select Category", class = "text-center mb-3"),
-            
-            # Stacked Buttons/Cards
-            div(
-              class = "d-grid gap-3", # Bootstrap class for vertical stacking/spacing
-              
-              # Use bslib::card or actionButton; I'll stick to actionButton for your logic
-              actionButton(
-                "erdb_overview",
-                label = tags$div(
-                  bs_icon("house", size = 20), 
-                  tags$h5("Overview", class = "mb-0") # mb-0 helps align text
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start" 
-              ),
-              
-              # NOTE: Repeat this pattern for all other buttons
-              actionButton(
-                "erdb_hr",
-                label = tags$div(
-                  bs_icon("people", size = 20), 
-                  tags$h5("Human Resource", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              ),
-              
-              actionButton(
-                "erdb_basic",
-                label = tags$div(
-                  bs_icon("info-circle", size = 20), 
-                  tags$h5("Basic Information", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              ),
-              
-              actionButton(
-                "erdb_infra",
-                label = tags$div(
-                  bs_icon("building", size = 20), 
-                  tags$h5("Infrastructure", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              ),
-              
-              actionButton(
-                "erdb_fin",
-                label = tags$div(
-                  bs_icon("currency-exchange", size = 20), 
-                  tags$h5("Financial", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              ),
-              
-              actionButton(
-                "erdb_monitoring",
-                label = tags$div(
-                  bs_icon("bar-chart-line", size = 20), 
-                  tags$h5("Monitoring", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              ),
-              
-              actionButton(
-                "erdb_ppas",
-                label = tags$div(
-                  bs_icon("clipboard-check", size = 20), 
-                  tags$h5("PPAs", class = "mb-0")
-                ),
-                class = "w-100 btn-card d-flex align-items-center justify-content-start"
-              )
-            ) # /div .d-grid
-          ), # /sidebar
-          
-          # 2. MAIN CONTENT AREA
-          # The main content area handles the second column (col_widths = 10)
-          div(
-            class = "main_content_erdb", # Retain your custom class if needed
-            uiOutput("erdb_content")    # Dynamic area that changes based on button clicks
-          )
-        ) # /layout_sidebar
-      ), # /nav_panel
+      # nav_panel(
+      #   title = "Education Resource Dashboard",
+      #   
+      #   # --- SIDEBAR + MAIN CONTENT LAYOUT (using bslib::layout_sidebar) ---
+      #   layout_sidebar(
+      #     
+      #     # 1. SIDEBAR CONTENT
+      #     # The sidebar argument handles the first column (col_widths = 2)
+      #     sidebar = sidebar(
+      #       width = 250, # Set a fixed or proportional width for the sidebar
+      #       class = "sidebar_erdb", # Retain your custom class if needed
+      #       
+      #       tags$h4("Select Category", class = "text-center mb-3"),
+      #       
+      #       # Stacked Buttons/Cards
+      #       div(
+      #         class = "d-grid gap-3", # Bootstrap class for vertical stacking/spacing
+      #         
+      #         # Use bslib::card or actionButton; I'll stick to actionButton for your logic
+      #         actionButton(
+      #           "erdb_overview",
+      #           label = tags$div(
+      #             bs_icon("house", size = 20), 
+      #             tags$h5("Overview", class = "mb-0") # mb-0 helps align text
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start" 
+      #         ),
+      #         
+      #         # NOTE: Repeat this pattern for all other buttons
+      #         actionButton(
+      #           "erdb_hr",
+      #           label = tags$div(
+      #             bs_icon("people", size = 20), 
+      #             tags$h5("Human Resource", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         ),
+      #         
+      #         actionButton(
+      #           "erdb_basic",
+      #           label = tags$div(
+      #             bs_icon("info-circle", size = 20), 
+      #             tags$h5("Basic Information", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         ),
+      #         
+      #         actionButton(
+      #           "erdb_infra",
+      #           label = tags$div(
+      #             bs_icon("building", size = 20), 
+      #             tags$h5("Infrastructure", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         ),
+      #         
+      #         actionButton(
+      #           "erdb_fin",
+      #           label = tags$div(
+      #             bs_icon("currency-exchange", size = 20), 
+      #             tags$h5("Financial", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         ),
+      #         
+      #         actionButton(
+      #           "erdb_monitoring",
+      #           label = tags$div(
+      #             bs_icon("bar-chart-line", size = 20), 
+      #             tags$h5("Monitoring", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         ),
+      #         
+      #         actionButton(
+      #           "erdb_ppas",
+      #           label = tags$div(
+      #             bs_icon("clipboard-check", size = 20), 
+      #             tags$h5("PPAs", class = "mb-0")
+      #           ),
+      #           class = "w-100 btn-card d-flex align-items-center justify-content-start"
+      #         )
+      #       ) # /div .d-grid
+      #     ), # /sidebar
+      #     
+      #     # 2. MAIN CONTENT AREA
+      #     # The main content area handles the second column (col_widths = 10)
+      #     div(
+      #       class = "main_content_erdb", # Retain your custom class if needed
+      #       uiOutput("erdb_content")    # Dynamic area that changes based on button clicks
+      #     )
+      #   ) # /layout_sidebar
+      # ), # /nav_panel
       
       # nav_panel("Plantilla Positions",  #GMIS
       #           layout_sidebar(
@@ -395,66 +395,106 @@ output$STRIDE2 <- renderUI({
       #               col_widths = c(12,12)))), # End of Plantilla nav_panel - COMMA is correct
       # --- PLANTILLA POSITIONS PANEL ---
       nav_panel("Build your Dashboard",
-        layout_sidebar(
-          sidebar = sidebar(
-            title = "Dashboard Controls",
-            uiOutput("back_button_ui"),
-            pickerInput(
-              inputId = "selected_metrics",
-              label = "Select metrics to display:",
-              choices = metric_choices,
-              multiple = TRUE, # Allow multiple selections
-              options = list(
-                `actions-box` = TRUE,  # Adds "Select All" and "Deselect All"
-                `dropup-auto` = FALSE, # Forces it to always drop down
-                `live-search` = TRUE,   # <-- Adds the search bar
-                `live-search-style` = 'contains'
-              )
-            ),
-            # --- NEW PRESET BUTTONS ---
-            # In your UI definition (e.g., in a bslib::sidebar)
-            
-            # ... (Your pickerInput for 'selected_metrics' goes here)
-            
-            tags$h5("Metric Presets", style = "margin-top: 20px;"),
-            
-            # --- NEW: Updated to Toggle Checkboxes ---
-            
-            # Preset 1: Teacher Focus
-            shinyWidgets::awesomeCheckbox(
-              inputId = "preset_teacher",
-              label = tags$div(
-                # Use flex for alignment
-                style = "display: flex; align-items: center;", 
-                # Use a span for better inline text behavior
-                tags$span("Teacher Focus", style = "margin-left: 10px; font-size: 1.1rem;") 
-              ),
-              value = FALSE # Start as OFF
-            ),
-            
-            tags$div(style = "margin-top: 5px;"), # Spacer
-            
-            # Preset 2: Demographic Focus
-            shinyWidgets::awesomeCheckbox(
-              inputId = "preset_school",
-              label = tags$div(
-                style = "display: flex; align-items: center;", 
-                tags$span("School Focus", style = "margin-left: 10px; font-size: 1.1rem;")
-              ),
-              value = FALSE # Start as OFF
-            ),
-            shinyWidgets::awesomeCheckbox(
-              inputId = "preset_classroom",
-              label = tags$div(
-                style = "display: flex; align-items: center;", 
-                tags$span("Infrastructure Focus", style = "margin-left: 10px; font-size: 1.1rem;")
-              ),
-              value = FALSE # Start as OFF
-            )),
-            # --- END OF NEW CHECKBOXES ---),
-          uiOutput("dashboard_grid")
-        )
+                layout_sidebar(
+                  sidebar = sidebar(
+                    title = "Dashboard Controls",
+                    uiOutput("back_button_ui"),
+                    
+                    # --- Your original controls (unchanged) ---
+                    pickerInput(
+                      inputId = "selected_metrics",
+                      label = "Select metrics to display:",
+                      choices = metric_choices,
+                      selected = c("Total.Schools", "Instructional.Rooms.2023.2024", "TotalEnrolment"),
+                      multiple = TRUE, 
+                      options = list(
+                        `actions-box` = TRUE,
+                        `dropup-auto` = FALSE, 
+                        `live-search` = TRUE,
+                        `live-search-style` = 'contains'
+                      )
+                    ),
+                    tags$h5("Metric Presets", style = "margin-top: 20px;"),
+                    
+                    # --- NEW: Wrapper Div to control alignment ---
+                    # We apply a negative margin to pull the checkboxes left.
+                    # This offsets the default padding of the input container.
+                    tags$div(
+                      style = "margin-left: -10px;", # Adjust this value if needed
+                      
+                      shinyWidgets::awesomeCheckbox(
+                        inputId = "preset_teacher",
+                        label = tags$div(
+                          style = "display: flex; align-items: center;", 
+                          tags$span("Teacher Focus", style = "margin-left: 10px; font-size: 1.1rem;") 
+                        ),
+                        value = FALSE 
+                      ),
+                      
+                      tags$div(style = "margin-top: 5px;"), # Spacer
+                      
+                      shinyWidgets::awesomeCheckbox(
+                        inputId = "preset_school",
+                        label = tags$div(
+                          style = "display: flex; align-items: center;", 
+                          tags$span("School Focus", style = "margin-left: 10px; font-size: 1.1rem;")
+                        ),
+                        value = FALSE
+                      ),
+                      
+                      tags$div(style = "margin-top: 5px;"), # <-- ADDED SPACER
+                      
+                      shinyWidgets::awesomeCheckbox(
+                        inputId = "preset_classroom",
+                        label = tags$div(
+                          style = "display: flex; align-items: center;", 
+                          tags$span("Infrastructure Focus", style = "margin-left: 10px; font-size: 1.1rem;")
+                        ),
+                        value = FALSE 
+                      )
+                    )), # --- End of Wrapper Div ---
+                  
+                  # --- *** NEW navset_card_tab LAYOUT *** ---
+                  bslib::navset_card_tab(
+                    full_screen = TRUE,
+                    
+                    # --- Tab 1: Your original dashboard grid ---
+                    bslib::nav_panel(
+                      title = "Dashboard Visuals",
+                      uiOutput("dashboard_grid") # This is your existing chart grid
+                    ),
+                    
+                    # --- Tab 2: The new Map + Table Data Explorer ---
+                    # --- Tab 2: The new Map + Table Data Explorer ---
+                    bslib::nav_panel(
+                      title = "Data Explorer",
+                      bslib::layout_columns(
+                        col_widths = c(6, 6), # 50/50 split
+                        
+                        # Column 1: Leaflet Map in its own Card
+                        bslib::card(
+                          full_screen = TRUE,
+                          bslib::card_header("School Map"),
+                          bslib::card_body(
+                            # Ensure the map has a defined height
+                            leaflet::leafletOutput("school_map", height = "500px") 
+                          )
+                        ),
+                        
+                        # Column 2: Datatable in its own Card
+                        bslib::card(
+                          full_screen = TRUE,
+                          bslib::card_header("Filtered Data (Visible on Map)"),
+                          bslib::card_body(
+                            DT::dataTableOutput("school_table")
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
       ),
+                    # --- *** END OF NEW LAYLUT *** ---
       nav_panel(
         "Plantilla Positions",
         layout_sidebar(
