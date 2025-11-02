@@ -1,13 +1,13 @@
 # Build your Dashboard
 
 # --- Drilldown State Management ---
-# --- Drilldown State Management ---
 global_drill_state <- reactiveVal(list(
   level = "Region", 
   region = NULL,    
   division = NULL,
-  coc_filter = NULL,      # <-- NEW: To store the COC filter
-  typology_filter = NULL  # <-- NEW: To store the Typology filter
+  coc_filter = NULL,      
+  typology_filter = NULL, 
+  shifting_filter = NULL  # <-- NEW: To store the Shifting filter
 ))
 global_trigger <- reactiveVal(0) 
 
@@ -55,7 +55,7 @@ observeEvent(input$selected_metrics, {
   # --- *** FIXED: Use the SAME metric lists as the toggle observers *** ---
   teacher_metrics <- c("TotalTeachers", "Total.Shortage","Total.Excess")
   classroom_metrics <- c("Instructional.Rooms.2023.2024","Classroom.Requirement","Buildings","Shifting") 
-  school_metrics <- c("School.Size.Typology","Modified.COC") 
+  school_metrics <- c("Total.Schools","School.Size.Typology","Modified.COC") 
   
   
   # Check if ALL metrics for a group are selected
@@ -101,6 +101,167 @@ observeEvent(input$selected_metrics, {
   
 }, ignoreNULL = FALSE, ignoreInit = TRUE) # <-- Added ignoreInit = TRUE
 
+# --- NEW: Map & Table Server Logic (Optimized) ---
+
+# --- 1. Base Leaflet Map ---
+# Renders the map using all data from the current drilldown/filter state.
+# --- 1. Base Leaflet Map ---
+# Renders the map using all data from the current drilldown/filter state.
+output$school_map <- leaflet::renderLeaflet({
+  
+  # --- *** Wait for first user drilldown/filter *** ---
+  req(global_trigger() > 0)
+  
+  data_to_map_raw <- filtered_data() # Get the raw filtered data
+  
+  # Stop if no data or no coordinate columns
+  req(nrow(data_to_map_raw) > 0)
+  req("Latitude" %in% names(data_to_map_raw), "Longitude" %in% names(data_to_map_raw))
+  
+  # --- *** NEW FIX: Force columns to numeric *before* using scales::comma *** ---
+  # This prevents the "round_any" error on character objects
+  data_to_map <- data_to_map_raw %>%
+    mutate(
+      # Use as.numeric(as.character(...)) to handle potential factors/text
+      TotalEnrolment = as.numeric(as.character(TotalEnrolment)),
+      Instructional.Rooms.2023.2024 = as.numeric(as.character(Instructional.Rooms.2023.2024)),
+      TotalTeachers = as.numeric(as.character(TotalTeachers))
+    )
+  # --- *** END OF FIX *** ---
+  
+  leaflet(data_to_map) %>%
+    
+    # --- Using satellite imagery tile ---
+    addProviderTiles(providers$Esri.WorldImagery) %>%
+    
+    # Fit map to show all data points
+    fitBounds(
+      lng1 = min(data_to_map$Longitude, na.rm = TRUE),
+      lat1 = min(data_to_map$Latitude, na.rm = TRUE),
+      lng2 = max(data_to_map$Longitude, na.rm = TRUE),
+      lat2 = max(data_to_map$Latitude, na.rm = TRUE)
+    ) %>%
+    addMarkers(
+      lng = ~Longitude,
+      lat = ~Latitude,
+      
+      # --- UPDATED: Handle NAs and format numbers in hover label ---
+      # This code is now safe because the columns were converted to numeric
+      label = ~lapply(paste(
+        "<strong>School:</strong>", htmltools::htmlEscape(School.Name),
+        "<br/><strong>School ID:</strong>", htmltools::htmlEscape(SchoolID),
+        "<br/><strong>Latitude:</strong>", htmltools::htmlEscape(Latitude),
+        "<br/><strong>Longitude:</strong>", htmltools::htmlEscape(Longitude),
+        "<br/><strong>Typology:</strong>", htmltools::htmlEscape(School.Size.Typology),
+        
+        "<br/><strong>Total Enrolment:</strong>", 
+        ifelse(is.na(TotalEnrolment), "N/A", scales::comma(TotalEnrolment, accuracy = 1)),
+        "<br/><strong>Total Classrooms:</strong>", 
+        ifelse(is.na(Instructional.Rooms.2023.2024), "N/A", scales::comma(Instructional.Rooms.2023.2024, accuracy = 1)),
+        "<br/><strong>Total Teachers:</strong>", 
+        ifelse(is.na(TotalTeachers), "N/A", scales::comma(TotalTeachers, accuracy = 1))
+      ), htmltools::HTML),
+      
+      # --- Added labelOptions for styling the hover label ---
+      labelOptions = labelOptions(
+        noHide = FALSE, 
+        direction = 'auto', 
+        style = list(
+          "font-weight" = "normal", 
+          "padding" = "3px 8px",
+          "background-color" = "rgba(255, 255, 255, 0.85)", # Semi-transparent white
+          "border" = "1px solid rgba(0,0,0,0.3)" # Faint border
+        )
+      ),
+      
+      # Use the unique ID as the layerId for proxy clicks
+      layerId = ~SchoolID,
+      clusterOptions = markerClusterOptions() # Cluster points when zoomed out
+    )
+})
+
+# --- 2. Reactive Data for Table (filters by map bounds) ---
+# This reactive filters 'filtered_data()' based on
+# what is currently visible in the 'school_map' bounds.
+data_in_bounds <- reactive({
+  
+  data_to_filter <- filtered_data()
+  req(nrow(data_to_filter) > 0)
+  req("Latitude" %in% names(data_to_filter), "Longitude" %in% names(data_to_filter))
+  
+  # Get map bounds from the input
+  bounds <- input$school_map_bounds
+  
+  # If bounds are NULL (map not initialized), return all data
+  if (is.null(bounds)) {
+    return(data_to_filter)
+  }
+  
+  # Filter data to include only points within the map bounds
+  data_to_filter %>%
+    filter(
+      Latitude >= bounds$south & Latitude <= bounds$north &
+        Longitude >= bounds$west & Longitude <= bounds$east
+    )
+})
+
+# --- 3. Render the Datatable ---
+# This table *only* shows the data from the 'data_in_bounds()' reactive.
+# It will automatically update when the map is panned or zoomed.
+output$school_table <- DT::renderDataTable({
+  
+  # --- *** NEW: Wait for first user drilldown/filter *** ---
+  req(global_trigger() > 0)
+  
+  data_for_table <- data_in_bounds()
+  
+  # ASSUMPTION: Selecting columns to show. Change these as needed.
+  cols_to_show <- c("SchoolID", "School.Name", "Division", "Region", "TotalTeachers", "Modified.COC")
+  
+  # Keep only columns that actually exist in the data
+  cols_to_show <- intersect(cols_to_show, names(data_for_table))
+  
+  req(length(cols_to_show) > 0)
+  
+  DT::datatable(
+    data_for_table[, cols_to_show],
+    selection = 'single', # Allow only single row selection
+    rownames = FALSE,
+    options = list(
+      pageLength = 10,
+      scrollY = "400px", # Adjusted height
+      scrollCollapse = TRUE,
+      paging = FALSE # Disable paging, use scroll instead
+    )
+  )
+})
+
+# --- 4. Observer (Table -> Map) ---
+# This zooms the map when a user clicks a row in the datatable.
+observeEvent(input$school_table_rows_selected, {
+  
+  # Get the selected row number
+  selected_row_index <- input$school_table_rows_selected
+  req(selected_row_index)
+  
+  # Get the data *currently in the table*
+  table_data <- data_in_bounds()
+  
+  # Get the specific row that was clicked
+  selected_row_data <- table_data[selected_row_index, ]
+  
+  # Ensure we have lat/lng
+  req("Latitude" %in% names(selected_row_data), "Longitude" %in% names(selected_row_data))
+  
+  # Use leafletProxy to zoom the map without re-rendering it
+  leafletProxy("school_map", session) %>%
+    setView(
+      lng = selected_row_data$Longitude,
+      lat = selected_row_data$Latitude,
+      zoom = 15 # You can adjust this zoom level
+    )
+})
+
 
 # --- *** UPDATED: PRESET TOGGLE OBSERVERS *** ---
 # These observers now ADD or REMOVE metrics based on the toggle state.
@@ -129,7 +290,7 @@ observeEvent(input$preset_teacher, {
     "selected_metrics", 
     selected = new_selection
   )
-})
+}, ignoreInit = TRUE)
 
 # Preset 2: Categorical/Demographic Focus Toggle
 observeEvent(input$preset_classroom, {
@@ -155,7 +316,7 @@ observeEvent(input$preset_classroom, {
     "selected_metrics", 
     selected = new_selection
   )
-})
+}, ignoreInit = TRUE)
 
 observeEvent(input$preset_school, {
   
@@ -163,7 +324,7 @@ observeEvent(input$preset_school, {
   current_selection <- isolate(input$selected_metrics)
   
   # 2. Define the metrics for *this* preset
-  school_metrics <- c("School.Size.Typology","Modified.COC") 
+  school_metrics <- c("Total.Schools","School.Size.Typology","Modified.COC") 
   
   # 3. Add or Remove based on the checkbox value
   if (input$preset_school == TRUE) {
@@ -180,17 +341,9 @@ observeEvent(input$preset_school, {
     "selected_metrics", 
     selected = new_selection
   )
-})
+}, ignoreInit = TRUE)
 
 
-# --- *** DELETED THE DUPLICATE SYNC OBSERVER *** ---
-# The old, buggy 'observeEvent(input$selected_metrics, ...)'
-# that was here has been REMOVED to prevent the loop.
-# --- *** DELETED THE DUPLICATE SYNC OBSERVER *** ---
-
-
-# --- Back Button Logic (Unchanged) ---
-# --- Back Button Logic (Updated) ---
 # --- Back Button Logic (Updated for Dynamic Label) ---
 output$back_button_ui <- renderUI({
   state <- global_drill_state() 
@@ -199,8 +352,15 @@ output$back_button_ui <- renderUI({
   
   # --- Determine button label based on the state, in reverse priority order ---
   
-  # 1. Check for Typology Filter (Highest priority undo)
-  if (!is.null(state$typology_filter)) {
+  # --- NEW: Check for Shifting Filter (Highest priority undo) ---
+  if (!is.null(state$shifting_filter)) {
+    
+    label_text <- stringr::str_trunc(state$shifting_filter, 20) 
+    button_label <- paste("Undo Filter:", label_text)
+    show_button <- TRUE
+    
+    # 1. Check for Typology Filter
+  } else if (!is.null(state$typology_filter)) {
     
     # Use str_trunc to prevent a very long button label
     label_text <- stringr::str_trunc(state$typology_filter, 20) 
@@ -242,7 +402,11 @@ observeEvent(input$back_button, {
   new_state <- state # Start with the current state
   
   # --- CHANGED: Clear categorical filters first (in reverse order) ---
-  if (!is.null(state$typology_filter)) {
+  
+  # --- NEW: Shifting filter cleared first ---
+  if (!is.null(state$shifting_filter)) {
+    new_state$shifting_filter <- NULL
+  } else if (!is.null(state$typology_filter)) {
     new_state$typology_filter <- NULL # Clear typology filter
   } else if (!is.null(state$coc_filter)) {
     new_state$coc_filter <- NULL      # Clear COC filter
@@ -262,6 +426,7 @@ observeEvent(input$back_button, {
 
 
 # --- DYNAMIC OBSERVER MANAGER ---
+# --- DYNAMIC OBSERVER MANAGER ---
 observe({
   # --- CHANGED: Use our new ordered list ---
   selected_metrics <- selection_order() 
@@ -275,6 +440,7 @@ observe({
     current_metric_source <- paste0("plot_source_", current_metric)
     
     # --- NEW: Categorical Filter Observers ---
+    
     # This observer handles clicks on the Modified.COC chart
     observeEvent(event_data("plotly_click", source = "coc_pie_click"), {
       d <- event_data("plotly_click", source = "coc_pie_click")
@@ -309,12 +475,53 @@ observe({
       
     }, ignoreNULL = TRUE, ignoreInit = TRUE)
     
+    # --- *** NEW: Observer for Shifting *** ---
+    # This observer handles clicks on the Shifting bar chart
+    observeEvent(event_data("plotly_click", source = "shifting_bar_click"), {
+      d <- event_data("plotly_click", source = "shifting_bar_click")
+      if (is.null(d$y)) return() # Horizontal bar charts use 'y'
+      
+      clicked_shifting <- d$y
+      
+      state <- isolate(global_drill_state())
+      # Only update if the filter is new
+      if (is.null(state$shifting_filter) || state$shifting_filter != clicked_shifting) {
+        state$shifting_filter <- clicked_shifting
+        global_drill_state(state)
+        global_trigger(global_trigger() + 1)
+      }
+      
+    }, ignoreNULL = TRUE, ignoreInit = TRUE)
+    # --- *** END OF NEW OBSERVER *** ---
+    
+    # --- Geographic Drilldown Observer ---
     observeEvent(event_data("plotly_click", source = current_metric_source), {
       state <- isolate(global_drill_state()) 
       if (state$level == "Legislative.District") return()
       d <- event_data("plotly_click", source = current_metric_source)
       if (is.null(d$y)) return()
       clicked_category <- d$y 
+      
+      # --- *** NEW VALIDATION STEP *** ---
+      # This check prevents "stale" clicks from re-firing
+      # when the UI is redrawn by a preset button.
+      
+      # 1. Get the data that is *supposed* to be in the current plot
+      current_plot_data <- tryCatch({
+        summarized_data_long() %>%
+          filter(Metric == current_metric)
+      }, error = function(e) { tibble() })
+      
+      # 2. Check if the click is valid
+      # If the clicked category (e.g., "Region I") is NOT in the
+      # current plot's data (e.g., c("SDO I", "SDO II")), then
+      # this is a stale click. Ignore it.
+      if (nrow(current_plot_data) == 0 || !clicked_category %in% current_plot_data$Category) {
+        return()
+      }
+      # --- *** END OF VALIDATION STEP *** ---
+      
+      # If the click is valid, proceed with drilldown
       new_state <- list()
       if (state$level == "Region") {
         new_state <- list(level = "Division", region = clicked_category, division = NULL)
@@ -330,8 +537,6 @@ observe({
 })
 
 
-# --- Reactive Data (Unchanged) ---
-# (The reactive data functions do not need to be changed)
 # --- Reactive Data (Updated) ---
 filtered_data <- reactive({
   trigger <- global_trigger() 
@@ -345,7 +550,7 @@ filtered_data <- reactive({
   } else if (state$level == "Legislative.District") {
     req(state$region, state$division)
     temp_data <- temp_data %>% 
-      filter(Region == astate$region, Division == state$division)
+      filter(Region == state$region, Division == state$division)
   }
   
   # --- 2. NEW: Categorical filters ---
@@ -359,9 +564,15 @@ filtered_data <- reactive({
     temp_data <- temp_data %>% filter(School.Size.Typology == state$typology_filter)
   }
   
+  # --- NEW: Apply Shifting filter if it exists ---
+  if (!is.null(state$shifting_filter)) {
+    temp_data <- temp_data %>% filter(Shifting == state$shifting_filter)
+  }
+  
   temp_data
 })
 
+# --- Reactive Data (Updated for "Total Schools" count and Robust NA/Numeric Conversion) ---
 summarized_data_long <- reactive({
   # This reactive doesn't care about UI order, so it can
   # still use input$selected_metrics directly.
@@ -372,32 +583,88 @@ summarized_data_long <- reactive({
   metrics_to_process <- input$selected_metrics 
   data_in <- filtered_data()
   
-  existing_metrics <- intersect(metrics_to_process, names(data_in))
-  if (length(existing_metrics) == 0) {
+  # A list to hold our different summary tibbles
+  summaries_list <- list()
+  
+  # --- NEW: Special handling for "Total Schools" ---
+  if ("Total.Schools" %in% metrics_to_process) {
+    
+    school_count_summary <- data_in %>%
+      group_by(!!sym(group_by_col)) %>%
+      summarise(Value = n(), .groups = "drop") %>% # <-- Count rows (n())
+      rename(Category = !!sym(group_by_col)) %>%
+      mutate(Metric = "Total.Schools") # <-- Assign the metric name
+    
+    # Add it to our list
+    summaries_list[["school_count"]] <- school_count_summary
+  }
+  # --- END of new "Total Schools" logic ---
+  
+  
+  # --- EXISTING: Handle all other standard numeric metrics ---
+  
+  # Define categorical metrics to exclude them from this numeric summary
+  categorical_metrics <- c("Modified.COC", "School.Size.Typology", "Total.Schools","Shifting")
+  
+  # Get only the standard numeric metrics selected by the user
+  numeric_metrics_to_process <- setdiff(metrics_to_process, categorical_metrics)
+  
+  existing_metrics <- intersect(numeric_metrics_to_process, names(data_in))
+  
+  if (length(existing_metrics) > 0) {
+    
+    # --- *** NEW: Force all potential metrics to numeric IN THE DATA *** ---
+    # This converts columns to numeric *before* the 'is.numeric' check.
+    # It handles factors/characters (e.g., "1,000", "N/A")
+    # by coercing them, creating NAs where needed.
+    data_in <- data_in %>%
+      mutate(
+        across(
+          all_of(existing_metrics), 
+          ~ as.numeric(as.character(.)) # as.character() handles factors
+        )
+      )
+    # --- *** END OF NEW CODE *** ---
+    
+    # Now, this check will correctly identify the columns we just converted
+    valid_metrics <- existing_metrics[sapply(data_in[existing_metrics], is.numeric)]
+    
+    if (length(valid_metrics) > 0) {
+      
+      # Perform the standard pivot/sum for all *other* numeric metrics
+      numeric_summary <- data_in %>%
+        select(!!sym(group_by_col), all_of(valid_metrics)) %>%
+        pivot_longer(
+          cols = all_of(valid_metrics),
+          names_to = "Metric",
+          values_to = "Value"
+        ) %>%
+        group_by(!!sym(group_by_col), Metric) %>%
+        # This sum() now safely handles NAs from coercion AND original NAs
+        summarise(Value = sum(Value, na.rm = TRUE), .groups = "drop") %>%
+        rename(Category = !!sym(group_by_col))
+      
+      # Add this tibble to our list
+      summaries_list[["numeric_metrics"]] <- numeric_summary
+    }
+  }
+  
+  # --- Combine all summaries into one long tibble ---
+  if (length(summaries_list) == 0) {
+    # Return an empty tibble if no valid metrics were found
     return(tibble(Category = character(), Metric = character(), Value = numeric()))
   }
-  valid_metrics <- existing_metrics[sapply(data_in[existing_metrics], is.numeric)]
   
-  if (length(valid_metrics) == 0) {
-    return(tibble(Category = character(), Metric = character(), Value = numeric()))
-  }
+  # Bind all the tibbles in the list (e.g., school counts + teacher counts)
+  final_summary_data <- bind_rows(summaries_list)
   
-  data_in %>%
-    select(!!sym(group_by_col), all_of(valid_metrics)) %>%
-    pivot_longer(
-      cols = all_of(valid_metrics),
-      names_to = "Metric",
-      values_to = "Value"
-    ) %>%
-    group_by(!!sym(group_by_col), Metric) %>%
-    summarise(Value = sum(Value, na.rm = TRUE), .groups = "drop") %>%
-    rename(Category = !!sym(group_by_col))
+  return(final_summary_data)
 })
 
 
-# --- Dynamic UI: Combined Dashboard Grid ---
-# --- Dynamic UI: Combined Dashboard Grid ---
-# --- Dynamic UI: Combined Dashboard Grid ---
+# --- Dynamic UI: Combined Dashboard Grid (Updated) ---
+# --- Dynamic UI: Combined Dashboard Grid (Updated) ---
+# --- Dynamic UI: Combined Dashboard Grid (Updated) ---
 # --- Dynamic UI: Combined Dashboard Grid (Updated) ---
 output$dashboard_grid <- renderUI({
   
@@ -435,6 +702,9 @@ output$dashboard_grid <- renderUI({
     if (!is.null(state$typology_filter)) {
       filter_parts <- c(filter_parts, state$typology_filter)
     }
+    if (!is.null(state$shifting_filter)) {
+      filter_parts <- c(filter_parts, state$shifting_filter)
+    }
     
     # Append filters to the title if any exist
     if (length(filter_parts) > 0) {
@@ -445,28 +715,35 @@ output$dashboard_grid <- renderUI({
     
     # --- Conditional Plot Rendering ---
     
-    # --- This block now handles *both* categorical charts ---
-    if (current_metric == "Modified.COC" || current_metric == "School.Size.Typology") {
+    # --- *** FIX 1: Added "Total.Schools" to this condition *** ---
+    if (current_metric == "Modified.COC" || current_metric == "School.Size.Typology" || current_metric == "Shifting" || current_metric == "Total.Schools") {
       # --- RENDER CATEGORICAL BAR CHART ---
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
-          plot_data_bar <- filtered_data()
           
-          if (nrow(plot_data_bar) == 0) {
-            return(
-              plot_ly() %>% 
-                layout(
-                  title = list(text = plot_title, x = 0.05), # Use unified title
-                  annotations = list(x = 0.5, y = 0.5, text = "No data available for this view", showarrow = FALSE, font = list(size = 14))
-                )
-            )
+          # --- Special data handling for categorical ---
+          # "Total.Schools" comes from summarized_data_long
+          # The others come from filtered_data()
+          
+          bar_data <- tibble() # Initialize
+          
+          if (current_metric == "Total.Schools") {
+            
+            bar_data <- summarized_data_long() %>%
+              filter(Metric == "Total.Schools") %>%
+              filter(!is.na(Category)) %>%
+              rename(Count = Value) # Rename Value to Count
+            
+          } else {
+            
+            plot_data_bar <- filtered_data()
+            if (nrow(plot_data_bar) > 0) {
+              bar_data <- plot_data_bar %>%
+                count(!!sym(current_metric), name = "Count") %>%
+                filter(!is.na(!!sym(current_metric))) %>%
+                rename(Category = !!sym(current_metric)) 
+            }
           }
-          
-          # <-- ***** SECTION 1: CODE FIX ***** -->
-          bar_data <- plot_data_bar %>%
-            count(!!sym(current_metric), name = "Count") %>%
-            filter(!is.na(!!sym(current_metric))) %>%
-            rename(Category = !!sym(current_metric)) # <-- FIXED: Rename dynamic col to "Category"
           
           if (nrow(bar_data) == 0) {
             return(
@@ -478,20 +755,31 @@ output$dashboard_grid <- renderUI({
             )
           }
           
-          plot_source <- ifelse(current_metric == "Modified.COC", 
-                                "coc_pie_click", 
-                                "typology_bar_click")
+          plot_source <- dplyr::case_when(
+            current_metric == "Modified.COC" ~ "coc_pie_click",
+            current_metric == "School.Size.Typology" ~ "typology_bar_click",
+            current_metric == "Shifting" ~ "shifting_bar_click", 
+            # "Total.Schools" uses the default drilldown, so we give it a standard source
+            TRUE ~ paste0("plot_source_", current_metric) 
+          )
+          
+          # Use plot_source for drilldown if it's NOT a filter
+          click_source_name <- if (plot_source %in% c("coc_pie_click", "typology_bar_click", "shifting_bar_click")) {
+            plot_source
+          } else {
+            paste0("plot_source_", current_metric) # Standard drilldown
+          }
           
           p_bar <- plot_ly(
             data = bar_data,
-            y = ~Category,  # <-- FIXED: Always use the "Category" column
+            y = ~Category, 
             x = ~Count,
             type = "bar",
             orientation = 'h',
             name = current_metric_name,
             texttemplate = '%{x:,.0f}', textposition = "outside",
             cliponaxis = FALSE, textfont = list(color = '#000000', size = 10),
-            source = plot_source  
+            source = click_source_name 
           ) %>%
             layout(
               title = list(text = plot_title, x = 0.05), # Use unified title
@@ -510,7 +798,6 @@ output$dashboard_grid <- renderUI({
       
     } else {
       # --- RENDER DEFAULT DRILLDOWN BAR CHART ---
-      # (This block is unchanged)
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
           trigger <- global_trigger()
@@ -518,15 +805,31 @@ output$dashboard_grid <- renderUI({
             filter(Metric == current_metric) %>%
             filter(!is.na(Category))
           
-          if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
+          # --- *** FIX 2: Separated the 'if' checks *** ---
+          # This avoids the logical(0) error
+          
+          # Check 1: Is the data frame empty?
+          if (nrow(plot_data) == 0) {
             return(
               plot_ly() %>% 
                 layout(
-                  title = list(text = plot_title, x = 0.05), # Use unified title
+                  title = list(text = plot_title, x = 0.05), 
                   annotations = list(x = 0.5, y = 0.5, text = "No data available for this view", showarrow = FALSE, font = list(size = 14))
                 )
             )
           }
+          
+          # Check 2: Are all values NA? (Now safe, since nrow > 0)
+          if (all(is.na(plot_data$Value))) {
+            return(
+              plot_ly() %>% 
+                layout(
+                  title = list(text = plot_title, x = 0.05), 
+                  annotations = list(x = 0.5, y = 0.5, text = "No data available for this view", showarrow = FALSE, font = list(size = 14))
+                )
+            )
+          }
+          # --- *** END OF FIX 2 *** ---
           
           max_val <- max(plot_data$Value, na.rm = TRUE)
           xaxis_range <- c(0, max_val * 1.3)
@@ -557,7 +860,6 @@ output$dashboard_grid <- renderUI({
   })
   
   # --- 2. Create the UI Card Elements ---
-  # (This loop is unchanged)
   plot_cards <- map(selected_metrics, ~{
     current_metric <- .x
     current_metric_name <- names(metric_choices)[metric_choices == current_metric]
@@ -565,19 +867,42 @@ output$dashboard_grid <- renderUI({
     # --- Conditional Summary Card ---
     summary_card_content <- NULL
     
-    if (current_metric == "Modified.COC" || current_metric == "School.Size.Typology") {
-      # ... (Logic unchanged) ...
+    # --- *** FIX 1 (Copied): Added "Total.Schools" to this condition *** ---
+    if (current_metric == "Modified.COC" || current_metric == "School.Size.Typology" || current_metric == "Shifting" || current_metric == "Total.Schools") {
+      
+      # --- Special handling for summary ---
       total_count <- tryCatch({
-        nrow(filtered_data()) 
+        if (current_metric == "Total.Schools") {
+          summarized_data_long() %>%
+            filter(Metric == "Total.Schools") %>%
+            pull(Value) %>%
+            sum(na.rm = TRUE)
+        } else {
+          nrow(filtered_data()) 
+        }
       }, error = function(e) { 0 }) 
       
+      # Use a different title for Total.Schools
+      summary_title <- if (current_metric == "Total.Schools") {
+        paste("Total", current_metric_name)
+      } else {
+        "Total Records in View"
+      }
+      
       summary_card_content <- card(
-        tags$h5(paste("Total Records in View"), style = "font-weight: 600; color: #555; margin-top: 5px; margin-bottom: 5px;"),
-        tags$h2(scales::comma(total_count), style = "font-weight: 700; color: #000; margin-top: 0; margin-bottom: 10px;")
+        style = "background-color: #FFFFE0; padding: 5px;", # Light yellow, tight padding
+        tags$h5(
+          summary_title, 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        ),
+        tags$h2(
+          scales::comma(total_count), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        )
       )
       
     } else {
-      # ... (Logic unchanged) ...
+      
       total_val <- tryCatch({
         summarized_data_long() %>%
           filter(Metric == current_metric) %>%
@@ -586,8 +911,15 @@ output$dashboard_grid <- renderUI({
       }, error = function(e) { 0 }) 
       
       summary_card_content <- card(
-        tags$h5(paste("Total", current_metric_name), style = "font-weight: 600; color: #555; margin-top: 5px; margin-bottom: 5px;"),
-        tags$h2(scales::comma(total_val), style = "font-weight: 700; color: #000; margin-top: 0; margin-bottom: 10px;")
+        style = "background-color: #FFFFE0; padding: 5px;", # Light yellow, tight padding
+        tags$h5(
+          paste("Total", current_metric_name), 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        ),
+        tags$h2(
+          scales::comma(total_val), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        )
       )
     }
     # --- END of Conditional Summary Card ---
@@ -607,10 +939,16 @@ output$dashboard_grid <- renderUI({
   })
   
   # --- 3. Arrange the cards into the layout ---
-  # (Unchanged)
-  do.call(
+  plot_grid <- do.call(
     bslib::layout_columns,
     c(list(col_widths = 4), plot_cards)
+  )
+  
+  # --- *** NEW: Add the main title *** ---
+  tagList(
+    tags$h3("Interactive Education Resource Dashboard", 
+            style = "text-align: center; font-weight: bold; margin-bottom: 20px;"),
+    plot_grid # This is the grid of cards we just defined
   )
   
 })

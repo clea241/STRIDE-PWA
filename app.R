@@ -126,14 +126,15 @@ overall_totals <- dfGMIS %>%
 
 # end of dfGMIS data
 
-metric_choices <- c("Teachers" = "TotalTeachers",
+metric_choices <- c("Total Schools" = "Total.Schools",
+  "Teachers" = "TotalTeachers",
                     "Teacher Shortage" = "Total.Shortage",
                     "Teacher Excess" = "Total.Excess",
                     "Enrolment" = "TotalEnrolment",
                     "Classrooms" = "Instructional.Rooms.2023.2024",
                     "Classroom Requirement" =  "Classroom.Requirement",
-                    "Buildings",
-                    "Shifting",
+                    "Buildings" = "Buildings",
+                    "Shifting" = "Shifting",
                     "Classroom Shortage" = "Est.CS",
                     "Major Repairs Needed" = "Major.Repair.2023.2024",
                     "Total Seats Available" = "Total.Seats.2023.2024",
