@@ -890,7 +890,7 @@ output$dashboard_grid <- renderUI({
       }
       
       summary_card_content <- card(
-        style = "background-color: #FFFFE0; padding: 5px;", # Light yellow, tight padding
+        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
         tags$h5(
           summary_title, 
           style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
@@ -911,7 +911,7 @@ output$dashboard_grid <- renderUI({
       }, error = function(e) { 0 }) 
       
       summary_card_content <- card(
-        style = "background-color: #FFFFE0; padding: 5px;", # Light yellow, tight padding
+        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
         tags$h5(
           paste("Total", current_metric_name), 
           style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
