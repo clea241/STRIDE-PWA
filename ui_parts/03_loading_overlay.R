@@ -14,7 +14,6 @@ ui_loading <- tags$div(
   tags$div(
     style = "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
              color: black; font-size: 1.3em;",
-    tags$img(src = "LOAD.gif", height = "80px"),  # 👈 replace with your GIF or logo
-    tags$p(id = "loading-text", "Welcome to STRIDE...")
+    tags$img(src = "LOAD.gif", height = "200px"),  # 👈 replace with your GIF or logo
   )
 )
