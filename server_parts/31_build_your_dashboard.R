@@ -711,9 +711,15 @@ output$dashboard_grid <- renderUI({
       summary_title <- if (current_metric == "Total.Schools") paste("Total", current_metric_name) else "Total Records in View"
       
       summary_card_content <- card(
-        style = "background-color: #FFFFE0; padding: 5px;", 
-        tags$h5(summary_title, style = "font-weight: 600; color: #555; margin: 2px;"),
-        tags$h2(scales::comma(total_count), style = "font-weight: 700; color: #000; margin: 2px;")
+        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
+        tags$h5(
+          summary_title, 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        ),
+        tags$h2(
+          scales::comma(total_count), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        )
       )
       
     } else {
@@ -723,9 +729,15 @@ output$dashboard_grid <- renderUI({
       }, error = function(e) { 0 }) 
       
       summary_card_content <- card(
-        style = "background-color: #FFFFE0; padding: 5px;", 
-        tags$h5(paste("Total", current_metric_name), style = "font-weight: 600; color: #555; margin: 2px;"),
-        tags$h2(scales::comma(total_val), style = "font-weight: 700; color: #000; margin: 2px;")
+        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
+        tags$h5(
+          paste("Total", current_metric_name), 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        ),
+        tags$h2(
+          scales::comma(total_val), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
+        )
       )
     }
     

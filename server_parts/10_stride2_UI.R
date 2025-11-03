@@ -10,8 +10,8 @@ output$STRIDE2 <- renderUI({
     margin-left: 20px;
     margin-top: 20px;"),
     tags$div(
-      tags$img(src = "Stridelogo1.png", height = "74px", style = "margin-right: 9px; padding-top: 9px;"),
-      tags$small("Strategic Inventory for Deployment Efficiency", style = "font-size: 17px; color: ##ffb81c; display: block; line-height: 1;")
+      tags$img(src = "Stridelogo1.png", height = "74px", style = "margin-right: -3px; padding-top: 11px; margin-top: -35px;"),
+      tags$small("Strategic Inventory for Deployment Efficiency", style = "font-size: 17px; color: #3d3232; display: block; line-height: 1; margin-block: -21px")
     )
   ) # End of navbar_title_ui tags$a
   
