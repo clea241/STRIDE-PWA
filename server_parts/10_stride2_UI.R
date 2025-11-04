@@ -383,15 +383,16 @@ output$STRIDE2 <- renderUI({
         tags$button(class = "carousel-nav prev-slide", "<"),
         tags$button(class = "carousel-nav next-slide", ">")
       ),
-        # # --- Go to Dashboard Button (unchanged) ---
-        # div(
-        #   style = "text-align:center;",
-        #   tags$a(
-        #     href = "#",
-        #     class = "go-dashboard-btn",
-        #     "Go to Dashboard"
-        #   )
-        # ),
+      # --- Go to Dashboard Button (FIXED) ---
+      div(
+        style = "text-align:center;",
+        # Replaced tags$a with actionButton and gave it an ID
+        actionButton(
+          inputId = "goto_dashboard_btn", # This is the new ID we will listen for
+          label = "Go to Dashboard",
+          class = "go-dashboard-btn" # This keeps your custom styling
+        )
+      ),
         
         # --- Carousel Script ---
         tags$script(HTML("

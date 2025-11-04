@@ -31,9 +31,7 @@ authentication_server <- function(input, output, session, user_status,
             ),
             h2(
               HTML('
-        <span class="stride-str">Str</span>
-        <img src="i.png" class="stride-logo-i" alt="I Logo">
-        <span class="stride-ide">de</span>
+        <img src="Stridelogo1.png" class="stride-logo-i" alt="I Logo">
       '),
               class = "stride-logo-text mt-3"
             ),
