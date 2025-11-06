@@ -249,6 +249,26 @@ server <- function(input, output, session) {
   source("server_parts/98_commented_sections.R", local = TRUE)
   source("server_parts/99_others.R", local = TRUE)
   
+  # Make sure you have this in your UI definition (e.g., inside fluidPage)
+  # shinyjs::useShinyjs()
+  
+  # ---
+  
+  # Home Nav panel go to dashboard button function
+  # This function now redirects the browser to your index.html page
+  observeEvent(input$goto_dashboard_btn, {
+    
+    # This is the path to your HTML file, relative to the 'www' folder.
+    # Since we put it in 'www/my_dashboard/index.html',
+    # the browser can find it at 'my_dashboard/index.html'.
+    dashboard_url <- "my_dashboard/index.html"
+    
+    # This JavaScript command tells the browser to navigate to the new URL.
+    # We use sprintf to safely insert the URL into the command.
+    shinyjs::runjs(sprintf("window.location.href = '%s';", dashboard_url))
+    
+  })
+  
 }
 
 source("server_parts/29_authentication_module.R", local = TRUE)
