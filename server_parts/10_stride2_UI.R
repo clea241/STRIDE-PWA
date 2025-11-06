@@ -798,7 +798,7 @@ ease;
                   "Administrative Officer",
                   "Administrative Assistant"
                 ),
-                inline = TRUE, 
+                inline = FALSE, 
                 status = "primary" # Adds a nice blue style
               )
             ),
@@ -1189,6 +1189,7 @@ ease;
             pickerInput(
               inputId = "ThirdLevel_Strands",
               label = "Select Strand(s):",
+              width = "100%",
               choices = c(
                 "Administration",
                 "Deped Attached Agencies",
@@ -1217,6 +1218,8 @@ ease;
               ),
               multiple = TRUE,
               options = pickerOptions(
+                container = "body",
+                width = "350px",  # <-- ADD THIS LINE to match your sidebar
                 actionsBox = TRUE,
                 liveSearch = TRUE,
                 header = "Select Strand(s)",
@@ -1960,32 +1963,51 @@ ease;
         ))), # End of CLOUD nav_menu - COMMA is correct here
     
     nav_panel(
-      title = tags$b("Contact Us"),
-      icon = bs_icon("envelope"),
-      h3("Contact Information"),
+      title = tags$b("mySTRIDE"), # Pinalitan ang title
+      icon = bs_icon("box-arrow-right"), # Pinalitan ang icon
+      
+      h3("mySTRIDE Access"), # Pinalitan ang header
+      
+      # --- Google Form (Commented Out as requested) ---
+      # fluidRow(
+      #   column(12,
+      #          tags$iframe(
+      #            id = "googleform",
+      #            src = "https://docs.google.com/forms/d/e/1FAIpQLScmWmVzlAHgsitxUncINy4OC_5gkyg2LvYcJAkAGlGAzQHNvw/viewform?embedded=true",
+      #            width = "100%",
+      #            height = "700px",
+      #            frameborder = "0",
+      #            marginheight = "0",
+      #            marginwidth = "0")
+      #   )
+      # ),
+      
+      # --- New Card with Button Inside ---
       fluidRow(
-        column(12,
-               tags$iframe(
-                 id = "googleform",
-                 src = "https://docs.google.com/forms/d/e/1FAIpQLScmWmVzlAHgsitxUncINy4OC_5gkyg2LvYcJAkAGlGAzQHNvw/viewform?embedded=true", # Replace YOUR_FORM_ID
-                 width = "100%", # Or a specific pixel value like "760"
-                 height = "700px", # Or a specific pixel value like "500"
-                 frameborder = "0",
-                 marginheight = "0",
-                 marginwidth = "0")
-        )
-      ),
-      # --- Go to Dashboard Button (FIXED) ---
-      div(
-        style = "text-align:center;",
-        # Replaced tags$a with actionButton and gave it an ID
-        actionButton(
-          inputId = "goto_dashboard_btn", # This is the new ID we will listen for
-          label = "Go to Dashboard",
-          class = "go-dashboard-btn" # This keeps your custom styling
-        )
-      ),
-    ), # End of Contact Us nav_panel - COMMA is correct here
+        column(
+          width = 6, 
+          offset = 3, 
+          class = "mt-5 mb-5",
+          style = "text-align: center;", 
+          bslib::card( 
+            tags$h5("Access mySTRIDE here"),
+            
+            # --- Button (Moved Inside Card) ---
+            div(
+             
+              style = "text-align:center; margin-top: 20px;", 
+              actionButton(
+                inputId = "goto_dashboard_btn", 
+                label = "mySTRIDE", # Pinalitan ang text ng button
+                class = "go-dashboard-btn" 
+              )
+            )
+            
+          ) # End of bslib::card
+        ) # End of column
+      ), # End of fluidRow
+      
+    ), # End of mySTRIDE nav_panel
     
     # nav_spacer(), # COMMA is correct here
     # 
