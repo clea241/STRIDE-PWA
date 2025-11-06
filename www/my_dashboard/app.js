@@ -1,6 +1,5 @@
 // --- NEW: Robust Instant Update Logic ---
-// This block replaces both the old 'Instant Update Logic'
-// and the old 'Register the Service Worker' blocks.
+// (This section is unchanged)
 let refreshing = false;
 if ('serviceWorker' in navigator) {
     
@@ -48,19 +47,51 @@ if ('serviceWorker' in navigator) {
 // --- END: Robust Instant Update Logic ---
 
 
-// --- Landing Page Logic ---
-// (This section is unchanged)
+// --- MODIFIED: Landing Page Logic ---
 const landingPage = document.getElementById('landingPage');
 const appContainer = document.getElementById('appContainer');
 const startSurveyBtn = document.getElementById('startSurveyBtn');
 
+/**
+ * Checks if the user agent string indicates a mobile device.
+ * @returns {boolean} True if mobile, false if not.
+ */
+function isMobileDevice() {
+    // This regex checks for 'Mobi' (common in mobile browsers) or 'Android'
+    // 'i' makes the check case-insensitive.
+    return /Mobi|Android/i.test(navigator.userAgent);
+}
+
 if (startSurveyBtn) {
     startSurveyBtn.addEventListener('click', () => {
-        landingPage.style.display = 'none';
-        appContainer.style.display = 'flex'; // Show the app
         
-        // Now we show the first page of the form
-        showPage(0); 
+        if (isMobileDevice()) {
+            // --- OUTCOME 1: USER IS ON MOBILE ---
+            // This is the normal flow: show the app.
+            console.log('Mobile device detected. Starting app...');
+            landingPage.style.display = 'none';
+            appContainer.style.display = 'flex'; // Show the app
+            showPage(0); // Show the first page of the form
+        } else {
+            // --- OUTCOME 2: USER IS ON DESKTOP ---
+            // We will replace the landing page content with the new message and QR code.
+            console.log('Desktop device detected. Showing message and QR code.');
+            
+            // --- THIS HTML BLOCK IS UPDATED ---
+            landingPage.innerHTML = `
+                <h1 style="text-align: center;">Desktop Detected</h1>
+                <p style="text-align: center;">This data collection tool is designed for mobile use.</p>
+                <p style="text-align: center;">Access this page using your mobile browser and install the app! </p>
+                
+            `;
+            // --- END OF UPDATED BLOCK ---
+
+            // We remove the green theme color from the h1
+            const h1 = landingPage.querySelector('h1');
+            if (h1) {
+                h1.style.color = '#333'; // A neutral dark color
+            }
+        }
     });
 }
 // --- END: Landing Page Logic ---
@@ -73,7 +104,6 @@ const STORE_NAME = 'surveys';
 let db;
 
 function initDB() {
-    // ... (unchanged)
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, 1);
         request.onupgradeneeded = (event) => {
@@ -94,7 +124,6 @@ function initDB() {
 }
 
 function addSurveyToDB(surveyData) {
-    // ... (unchanged)
     return new Promise((resolve, reject) => {
         if (!db) {
             console.error('Database is not open.');
@@ -126,7 +155,6 @@ function addSurveyToDB(surveyData) {
 // --- Multi-Page Form Logic ---
 // (This section is unchanged)
 let currentPage = 0;
-// ... (rest of file is unchanged) ...
 const surveyForm = document.getElementById('surveyForm');
 const formPages = document.querySelectorAll('.form-page');
 const nextBtn = document.getElementById('nextBtn');
@@ -165,56 +193,64 @@ function showPage(pageIndex) {
     currentPage = pageIndex;
 }
 
-nextBtn.addEventListener('click', () => {
-    if (currentPage < totalPages - 1) {
-        showPage(currentPage + 1);
-    }
-});
+if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+        if (currentPage < totalPages - 1) {
+            showPage(currentPage + 1);
+        }
+    });
+}
 
-prevBtn.addEventListener('click', () => {
-    if (currentPage > 0) {
-        showPage(currentPage - 1);
-    }
-});
+if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+        if (currentPage > 0) {
+            showPage(currentPage - 1);
+        }
+    });
+}
 
 // --- Handle Form Submission ---
 // (This section is unchanged)
-surveyForm.addEventListener('submit', (event) => {
-    event.preventDefault(); // Prevent default submission
+if (surveyForm) {
+    surveyForm.addEventListener('submit', (event) => {
+        event.preventDefault(); // Prevent default submission
 
-    // Get all form data
-    const formData = new FormData(surveyForm);
-    const surveyData = Object.fromEntries(formData.entries());
-    
-    // Add timestamp
-    surveyData.timestamp = new Date().toISOString();
+        // Get all form data
+        const formData = new FormData(surveyForm);
+        const surveyData = Object.fromEntries(formData.entries());
+        
+        // Add timestamp
+        surveyData.timestamp = new Date().toISOString();
 
-    // Save the complete data to IndexedDB
-    addSurveyToDB(surveyData)
-        .then(() => {
-            console.log('Full survey saved to IndexedDB.');
-            alert('Thank you! Your survey has been saved and will sync when online.');
+        // Save the complete data to IndexedDB
+        addSurveyToDB(surveyData)
+            .then(() => {
+                console.log('Full survey saved to IndexedDB.');
+                alert('Thank you! Your survey has been saved and will sync when online.');
 
-            // Clear the form and the draft
-            surveyForm.reset();
-            clearDraft();
-            
-            // Go back to the first page
-            showPage(0);
-        })
-        .catch((err) => {
-            console.error('Failed to save full survey:', err);
-            alert('There was an error saving your survey.');
-        });
-});
+                // Clear the form and the draft
+                surveyForm.reset();
+                clearDraft();
+                
+                // Go back to the first page
+                showPage(0);
+            })
+            .catch((err) => {
+                console.error('Failed to save full survey:', err);
+                alert('There was an error saving your survey.');
+            });
+    });
+}
 
 // --- Draft Saving ---
 // (This section is unchanged)
 const DRAFT_KEY = 'strideSurveyDraft';
 
-surveyForm.addEventListener('input', () => {
-    saveDraft();
-});
+if (surveyForm) {
+    surveyForm.addEventListener('input', () => {
+        saveDraft();
+    });
+}
 
 function saveDraft() {
     const formData = new FormData(surveyForm);
@@ -225,8 +261,8 @@ function saveDraft() {
 
 function loadDraft() {
     const draft = localStorage.getItem(DRAFT_KEY);
-    if (!draft) {
-        console.log('No draft found.');
+    if (!draft || !surveyForm) {
+        console.log('No draft found or form missing.');
         return;
     }
     
@@ -246,7 +282,9 @@ function loadDraft() {
         if (draftData['stride_region']) {
             populateDivisions(draftData['stride_region']);
             // We must re-set the division value *after* populating
-            surveyForm.elements['stride_division'].value = draftData['stride_division'] || '';
+            if (surveyForm.elements['stride_division']) {
+                surveyForm.elements['stride_division'].value = draftData['stride_division'] || '';
+            }
         }
         
         console.log('Draft loaded from localStorage.');
@@ -261,16 +299,18 @@ function clearDraft() {
     console.log('Draft cleared from localStorage.');
 }
 
-clearFormBtn.addEventListener('click', () => {
-    if (confirm('Are you sure you want to clear all data in this form? This cannot be undone.')) {
-        surveyForm.reset();
-        clearDraft();
-        // Manually clear division dropdown
-        populateDivisions('');
-        showPage(0); // Go back to start
-        console.log('Form and draft cleared by user.');
-    }
-});
+if (clearFormBtn) {
+    clearFormBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all data in this form? This cannot be undone.')) {
+            surveyForm.reset();
+            clearDraft();
+            // Manually clear division dropdown
+            populateDivisions('');
+            showPage(0); // Go back to start
+            console.log('Form and draft cleared by user.');
+        }
+    });
+}
 
 
 // --- Dynamic Dropdown Logic ---
@@ -287,6 +327,8 @@ const regionSelect = document.getElementById('stride_region');
 const divisionSelect = document.getElementById('stride_division');
 
 function populateDivisions(region) {
+    if (!divisionSelect) return; // Exit if element doesn't exist
+    
     const divisions = divisionData[region] || [];
     
     divisionSelect.innerHTML = '<option value="">--- Select Division ---</option>';
@@ -299,9 +341,11 @@ function populateDivisions(region) {
     });
 }
 
-regionSelect.addEventListener('change', (event) => {
-    populateDivisions(event.target.value);
-});
+if (regionSelect) {
+    regionSelect.addEventListener('change', (event) => {
+        populateDivisions(event.target.value);
+    });
+}
 
 
 // --- Initialize ---

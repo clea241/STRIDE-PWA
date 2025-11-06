@@ -1,5 +1,5 @@
 // --- CONFIGURATION ---
-const CACHE_NAME = 'survey-app-shell-v129'; // <-- UPDATED VERSION
+const CACHE_NAME = 'survey-app-shell-v131'; // <-- UPDATED VERSION
 const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznFY8yjIUgaWcEp1RBdgRqEvwUZ4Y2fct_vTrj2ZVufrR78M21i8YHy0zRUlizOxQR/exec"; 
 
 const DB_NAME = 'surveyDB';
@@ -12,11 +12,11 @@ const FILES_TO_CACHE = [
     'app.js',
     'manifest.json',
     'images/icon-192.png',
-    'images/icon-512.png'
+    'images/icon-512.png',
+    'strideqr.png' // <-- ADDED THIS LINE
 ];
 
 // --- NEW: Message Listener ---
-// This listens for the 'SKIP_WAITING' command from app.js
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         console.log('[ServiceWorker] Received SKIP_WAITING message. Activating now.');
@@ -35,7 +35,6 @@ self.addEventListener('install', (event) => {
         })
     );
     
-    // We still keep this here for the first-install scenario
     self.skipWaiting(); 
 });
 
@@ -57,7 +56,6 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncSurveys() {
-    // ... (unchanged)
     console.log('[ServiceWorker] Starting survey sync...');
     try {
         const surveys = await getAllSurveysFromDB();
@@ -102,7 +100,6 @@ async function syncSurveys() {
 
 // --- INDEXEDDB HELPER FUNCTIONS (Unchanged) ---
 function openDB() {
-    // ... (unchanged)
     return new Promise((resolve, reject) => {
         const request = self.indexedDB.open(DB_NAME, 1);
         request.onsuccess = (event) => resolve(event.target.result);
@@ -117,7 +114,6 @@ function openDB() {
 }
 
 async function getAllSurveysFromDB() {
-    // ... (unchanged)
     const db = await openDB();
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readonly');
@@ -129,7 +125,6 @@ async function getAllSurveysFromDB() {
 }
 
 async function deleteSurveyFromDB(id) {
-    // ... (unchanged)
     const db = await openDB();
     return new Promise((resolve, reject) => {
         const transaction = db.transaction([STORE_NAME], 'readwrite');
