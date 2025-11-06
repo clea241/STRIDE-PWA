@@ -399,16 +399,6 @@ ease;
         tags$button(class = "carousel-nav prev-slide", "<"),
         tags$button(class = "carousel-nav next-slide", ">")
       ),
-      # # --- Go to Dashboard Button (FIXED) ---
-      # div(
-      #   style = "text-align:center;",
-      #   # Replaced tags$a with actionButton and gave it an ID
-      #   actionButton(
-      #     inputId = "goto_dashboard_btn", # This is the new ID we will listen for
-      #     label = "Go to Dashboard",
-      #     class = "go-dashboard-btn" # This keeps your custom styling
-      #   )
-      # ),
         
         # --- Carousel Script ---
         tags$script(HTML("
@@ -1984,7 +1974,17 @@ ease;
                  marginheight = "0",
                  marginwidth = "0")
         )
-      )
+      ),
+      # --- Go to Dashboard Button (FIXED) ---
+      div(
+        style = "text-align:center;",
+        # Replaced tags$a with actionButton and gave it an ID
+        actionButton(
+          inputId = "goto_dashboard_btn", # This is the new ID we will listen for
+          label = "Go to Dashboard",
+          class = "go-dashboard-btn" # This keeps your custom styling
+        )
+      ),
     ), # End of Contact Us nav_panel - COMMA is correct here
     
     # nav_spacer(), # COMMA is correct here
