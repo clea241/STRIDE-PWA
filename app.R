@@ -178,6 +178,8 @@ if (file.exists(SERVICE_ACCOUNT_FILE)) {
 sheet_url <- "https://docs.google.com/spreadsheets/d/1e3ni50Jcv3sBAkG8TbwBt4v7kjjMRSVvf9gxtcMiqjU/edit?gid=0#gid=0"
 SHEET_ID <- "https://docs.google.com/spreadsheets/d/1x9D8xfXtkT1Mbr4M4We7I9sUqoj42X4SFX9N9hu24wM/edit?gid=0#gid=0"
 SHEET_NAME <- "Sheet1" # Assuming the data is on the first tab
+GUEST_SHEET_ID <- "https://docs.google.com/spreadsheets/d/1SvlP7gyfgmymo10hpstKyYs2N9jErCg5tqrmELboTRg/edit?gid=0#gid=0"
+
 
 
 # (ui_head, ui_containers, ui_loading, ui_footer)
@@ -239,6 +241,8 @@ server <- function(input, output, session) {
   source("server_parts/27_cloud_graphs_and_tables.R", local = TRUE)
   source("server_parts/28_login_page.R", local = TRUE)
   source("server_parts/31_build_your_dashboard.R", local = TRUE)
+  source("server_parts/32_guest_mode.R", local = TRUE)
+  
   
   
   # COMMENTED PARTS

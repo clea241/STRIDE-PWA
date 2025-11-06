@@ -63,6 +63,13 @@ authentication_server <- function(input, output, session, user_status,
             br(),
             actionLink(ns("btn_register"), "Create an account", class = "register-link"),
             br(),
+            div(
+              class = "text-center mt-3",
+              actionButton("guest_mode_btn", "Continue as Guest", 
+                           class = "btn btn-outline-secondary w-100 mt-3")
+            ),
+            
+            
             # actionButton(ns("guest_mode"), "Continue as Guest", class = "btn-secondary w-100 mt-2"),
             div(
               class = "login-logos-bottom",
@@ -278,13 +285,22 @@ authentication_server <- function(input, output, session, user_status,
   })
   
   # --- 9️⃣ GUEST MODE LOGIC ---
-  observeEvent(input$guest_mode, {
-    print("🟢 Guest mode activated")
-    user_status("authenticated")
-    authenticated_user("guest_user@stride")
-    session$sendCustomMessage("showLoader", "Entering STRIDE2 as Guest...")
-    later::later(function() { session$sendCustomMessage("hideLoader", NULL) }, 2)
+  observeEvent(input$guest_mode_btn, {
+    showModal(modalDialog(
+      title = "Guest Information",
+      easyClose = FALSE,
+      footer = tagList(
+        modalButton("Cancel"),
+        actionButton("submit_guest_info", "Continue", class = "btn btn-primary")
+      ),
+      textInput("guest_name", "Full Name"),
+      textInput("guest_email", "Email Address (optional)"),
+      textInput("guest_org", "Organization / Affiliation"),
+      textAreaInput("guest_purpose", "Purpose of Visit", placeholder = "e.g., exploring dashboards, data reference, etc."),
+      width = 500
+    ))
   })
+  
   
   
   
