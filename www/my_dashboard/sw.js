@@ -1,19 +1,15 @@
 // --- CONFIGURATION ---
-const CACHE_NAME = 'survey-app-shell-v131'; // <-- UPDATED VERSION
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbznFY8yjIUgaWcEp1RBdgRqEvwUZ4Y2fct_vTrj2ZVufrR78M21i8YHy0zRUlizOxQR/exec"; 
-
+// ⬇️ YOU WILL GET A NEW URL IN STEP 4 ⬇️
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxD8SxFbX_6FlAgUdk0jCSrqhkCrGs645sKJNgrjme4zJkSEiNOfpu53RxqOd0HeOTeiQ/exec"; 
+const CACHE_NAME = 'survey-app-shell-v201hiiiii-FINAL' ; 
 const DB_NAME = 'surveyDB';
 const STORE_NAME = 'surveys';
 
 const FILES_TO_CACHE = [
-    '.',
     'index.html',
     'style.css',
     'app.js',
-    'manifest.json',
-    'images/icon-192.png',
-    'images/icon-512.png',
-    'strideqr.png' // <-- ADDED THIS LINE
+    'manifest.json'
 ];
 
 // --- NEW: Message Listener ---
@@ -70,27 +66,40 @@ async function syncSurveys() {
         const syncPromises = surveys.map(survey => {
             
             const dataToSend = { ...survey };
-            delete dataToSend.id; 
+            delete dataToSend.id; // Remove the local DB ID before sending
 
+            // --- START OF FIX ---
             return fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify(dataToSend),
                 headers: {
                     'Content-Type': 'text/plain;charset=utf-8', 
                 },
-                mode: 'no-cors'
+                // mode: 'no-cors' <-- This was hiding the error
             })
             .then(response => {
-                console.log(`[ServiceWorker] Successfully synced survey ID ${survey.id}`);
-                return deleteSurveyFromDB(survey.id);
+                // Now we can *actually* check if it worked
+                if (response.ok) {
+                    console.log(`[ServiceWorker] Successfully synced survey ID ${survey.id}`);
+                    // Only delete it if the server confirmed success
+                    return deleteSurveyFromDB(survey.id);
+                } else {
+                    // The server returned an error (e.g., 404, 500)
+                    console.error(`[ServiceWorker] Server error for survey ID ${survey.id}. Status: ${response.status}`);
+                    // We do *not* delete the survey, so it will try again later
+                    return Promise.reject(new Error(`Server error: ${response.status}`));
+                }
             })
+            // This catch block now works for network errors *and* server errors
             .catch(err => {
                 console.error(`[ServiceWorker] Failed to sync survey ID ${survey.id}`, err);
+                // Do not delete, will retry on next sync
             });
+            // --- END OF FIX ---
         });
 
         await Promise.all(syncPromises);
-        console.log('[ServiceWorker] Survey sync complete.');
+        console.log('[ServiceWorker] Survey sync complete (or will retry failed items).');
 
     } catch (err) {
         console.error('[ServiceWorker] Error during sync:', err);
