@@ -62,7 +62,7 @@ function isMobileDevice() {
     return /Mobi|Android/i.test(navigator.userAgent);
 }
 
-if (startSurveyBtn) {
+/* if (startSurveyBtn) {
     startSurveyBtn.addEventListener('click', () => {
         
         if (isMobileDevice()) {
@@ -94,7 +94,21 @@ if (startSurveyBtn) {
         }
     });
 }
-// --- END: Landing Page Logic ---
+// --- END: Landing Page Logic --- */
+
+// --- PASTE THIS NEW CODE ---
+
+if (startSurveyBtn) {
+    startSurveyBtn.addEventListener('click', () => {
+
+        // This code now runs for ALL devices (desktop or mobile)
+        console.log('Starting app...');
+        landingPage.style.display = 'none';
+        appContainer.style.display = 'flex'; // Show the app
+        showPage(0); // Show the first page of the form
+
+    });
+}
 
 
 // --- Database Setup (IndexedDB) ---
