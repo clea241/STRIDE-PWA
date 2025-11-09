@@ -676,6 +676,28 @@ ease;
                   tags$span("Enrolment Focus", style = "margin-left: 10px; font-size: 1.1rem;")
                 ),
                 value = FALSE 
+              ),
+              
+              tags$div(style = "margin-top: 5px;"), # Spacer
+              
+              shinyWidgets::awesomeCheckbox(
+                inputId = "preset_buildingcondition",
+                label = tags$div(
+                  style = "display: flex; align-items: center;", 
+                  tags$span("Building Condition", style = "margin-left: 10px; font-size: 1.1rem;")
+                ),
+                value = FALSE 
+              ),
+              
+              tags$div(style = "margin-top: 5px;"), # Spacer
+              
+              shinyWidgets::awesomeCheckbox(
+                inputId = "preset_roomcondition",
+                label = tags$div(
+                  style = "display: flex; align-items: center;", 
+                  tags$span("Room Condition", style = "margin-left: 10px; font-size: 1.1rem;")
+                ),
+                value = FALSE 
               )
               # --- END OF NEW PRESET ---
               # --- End of Wrapper Div ---
@@ -734,8 +756,8 @@ ease;
                                 "Buildings" = "Buildings",
                                 "Buildable Space" = "Buidable_space",
                                 "Major Repairs Needed" = "Major.Repair.2023.2024"),
-                `Facilities` = c("Total Seats Available" = "Total.Seats.2023.2024",
-                                 "Total Seats Shortage" = "Total.Seats.Shortage.2023.2024"),
+                `Facilities` = c("Seats Inventory" = "Total.Total.Seat",
+                                 "Seats Shortage" = "Total.Seats.Shortage"),
                 `Resources` = c("Ownership Type" = "OwnershipType",
                                 "Electricity Source" = "ElectricitySource",
                                 "Water Source" = "WaterSource"
@@ -748,6 +770,118 @@ ease;
                 title = "No Data Column Selected",
                 dropupAuto = FALSE,
                 dropup = FALSE
+              )
+            ),
+            
+            pickerInput(
+              inputId = "Combined_Conditions_Toggles_Build", # New combined ID
+              label = strong("Select Condition Metrics"),
+              choices = list(
+                `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
+                                      "For Condemnation (Building)" = "Building.Count_For.Condemnation",
+                                      "For Completion (Building)" = "Building.Count_For.Completion",
+                                      "On-going Construction (Building)" = "Building.Count_On.going.Construction",
+                                      "Good Condition (Building)" = "Building.Count_Good.Condition",
+                                      "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
+                                      "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
+                `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
+                                       "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
+                                       "For Completion (Room)" = "Number.of.Rooms_For.Completion",
+                                       "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
+                                       "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
+                                       "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
+                                       "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair")
+                ),
+              multiple = TRUE,
+              options = pickerOptions(
+                `actions-box` = TRUE,
+                liveSearch = TRUE,
+                header = "Select Data Columns",
+                title = "No Data Column Selected",
+                dropupAuto = FALSE,
+                dropup = FALSE
+              )
+            ),
+            
+            # --- INFRASTRUCTURE PROGRAM PICKER ---
+            # --- INFRASTRUCTURE PROGRAM PICKER (UPDATED with full column names as values) ---
+            shinyWidgets::pickerInput(
+              inputId = "Infra_Programs_Picker_Build",
+              label = "Infrastructure Programs",
+              
+              # --- NEW: Grouped choices with full column names as the *value* ---
+              choices = list(
+                "ALS/CLC" = c(
+                  "ALS/CLC (2024)" = "ALS.CLC_2024_Allocation"
+                ),
+                "Electrification" = c(
+                  "Electrification (2017)" = "ELECTRIFICATION.2017",
+                  "Electrification (2018)" = "ELECTRIFICATION.2018",
+                  "Electrification (2019)" = "ELECTRIFICATION.2019",
+                  "Electrification (2023)" = "ELECTRIFICATION.2023",
+                  "Electrification (2024)" = "ELECTRIFICATION.2024"
+                ),
+                "Gabaldon" = c(
+                  "Gabaldon (2020)" = "GABALDON.2020",
+                  "Gabaldon (2021)" = "GABALDON.2021",
+                  "Gabaldon (2022)" = "GABALDON.2022",
+                  "Gabaldon (2023)" = "GABALDON.2023",
+                  "Gabaldon (2024)" = "GABALDON.2024"
+                ),
+                "LibHub" = c(
+                  "LibHub (2024)" = "LibHub.2024"
+                ),
+                "LMS" = c(
+                  "LMS (2020)" = "LMS.2020",
+                  "LMS (2021)" = "LMS.2021",
+                  "LMS (2022)" = "LMS.2022",
+                  "LMS (2023)" = "LMS.2023",
+                  "LMS (2024)" = "LMS.2024"
+                ),
+                "NC" = c(
+                  "NC (2014)" = "NC.2014",
+                  "NC (2015)" = "NC.2015",
+                  "NC (2016)" = "NC.2016",
+                  "NC (2017)" = "NC.2017",
+                  "NC (2018)" = "NC.2018",
+                  "NC (2019)" = "NC.2019",
+                  "NC (2020)" = "NC.2020",
+                  "NC (2021)" = "NC.2021",
+                  "NC (2023)" = "NC.2023",
+                  "NC (2024)" = "NC.2024"
+                ),
+                "QRF" = c(
+                  "QRF (2019)" = "QRF.2019",
+                  "QRF (2020)" = "QRF.2020",
+                  "QRF (2021)" = "QRF.2021",
+                  "QRF (2022)" = "QRF.2022.REPLENISHMENT",
+                  "QRF (2023)" = "QRF.2023",
+                  "QRF (2024)" = "QRF.2024"
+                ),
+                "Repair" = c(
+                  "Repair (2020)" = "REPAIR.2020",
+                  "Repair (2021)" = "REPAIR.2021",
+                  "Repair (2022)" = "REPAIR.2022",
+                  "Repair (2023)" = "REPAIR.2023",
+                  "Repair (2024)" = "REPAIR.2024"
+                ),
+                "School Health Facilities" = c(
+                  "Health (2022)" = "SCHOOL.HEALTH.FACILITIES.2022",
+                  "Health (2024)" = "SCHOOL.HEALTH.FACILITIES.2024"
+                ),
+                "SPED/ILRC" = c(
+                  "SPED (2024)" = "SPED.ILRC.2024"
+                )
+              ),
+              # --- End of new choices ---
+              
+              multiple = TRUE, 
+              options = shinyWidgets::pickerOptions(
+                actionsBox = TRUE,
+                deselectAllText = "Clear All",
+                selectAllText = "Select All",
+                liveSearch = TRUE,
+                noneSelectedText = "Select Programs..."
               )
             )
             

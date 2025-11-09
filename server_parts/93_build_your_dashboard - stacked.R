@@ -1,19 +1,12 @@
 # Build your Dashboard
 
-# --- Drilldown State Management (UPDATED) ---
+# --- Drilldown State Management ---
 global_drill_state <- reactiveVal(list(
   level = "Region", 
   region = NULL,    
   division = NULL,
   municipality = NULL,         
   legislative_district = NULL, 
-  
-  # --- NEW FILTERS ADDED ---
-  ownership_filter = NULL,
-  electricity_filter = NULL,
-  water_filter = NULL,
-  # --- END NEW FILTERS ---
-  
   coc_filter = NULL,      
   typology_filter = NULL, 
   shifting_filter = NULL,
@@ -33,7 +26,7 @@ reactive_selected_school_id <- reactiveVal(NULL)
 # This must match the 'choices' in your 10_stride2_UI.R pickers
 hr_metric_choices <- list(
   `School Information` = c("Number of Schools" = "Total.Schools",
-                           "School Size Typology" = "School.Size.Typology", 
+    "School Size Typology" = "School.Size.Typology", 
                            "Curricular Offering" = "Modified.COC"),
   `Teaching Data` = c("Number of Teachers" = "TotalTeachers", 
                       "Teacher Excess" = "Total.Excess", 
@@ -58,100 +51,19 @@ infra_metric_choices <- list(
                   "Classroom Shortage" = "Est.CS",
                   "Shifting" = "Shifting",
                   "Number of Buildings" = "Buildings",
+                  "Building Condition" = "Building",
+                  "Room Condition" = "RoomCondition",
                   "Buildable Space" = "Buidable_space",
                   "Major Repairs Needed" = "Major.Repair.2023.2024"),
-  `Facilities` = c("Seats Inventory" = "Total.Total.Seat",
-                   "Seats Shortage" = "Total.Seats.Shortage"),
-  # --- MOVED Resources to categorical ---
+  `Facilities` = c("Seats" = "Seats",
+                   "Laptops" = "Laptops"),
   `Resources` = c("Ownership Type" = "OwnershipType",
                   "Electricity Source" = "ElectricitySource",
                   "Water Source" = "WaterSource"
   ))
 
-condition_metric_choices <- list(
-  `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
-                        "For Condemnation (Building)" = "Building.Count_For.Condemnation",
-                        "For Completion (Building)" = "Building.Count_For.Completion",
-                        "On-going Construction (Building)" = "Building.Count_On.going.Construction",
-                        "Good Condition (Building)" = "Building.Count_Good.Condition",
-                        "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
-                        "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
-  `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
-                         "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
-                         "For Completion (Room)" = "Number.of.Rooms_For.Completion",
-                         "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
-                         "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
-                         "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
-                         "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair")
-  
-)
-
-program_metric_choices <- list(
-  "ALS/CLC" = c(
-    "ALS/CLC (2024)" = "ALS.CLC_2024_Allocation"
-  ),
-  "Electrification" = c(
-    "Electrification (2017)" = "ELECTRIFICATION.2017",
-    "Electrification (2018)" = "ELECTRIFICATION.2018",
-    "Electrification (2019)" = "ELECTRIFICATION.2019",
-    "Electrification (2023)" = "ELECTRIFICATION.2023",
-    "Electrification (2024)" = "ELECTRIFICATION.2024"
-  ),
-  "Gabaldon" = c(
-    "Gabaldon (2020)" = "GABALDON.2020",
-    "Gabaldon (2021)" = "GABALDON.2021",
-    "Gabaldon (2022)" = "GABALDON.2022",
-    "Gabaldon (2023)" = "GABALDON.2023",
-    "Gabaldon (2024)" = "GABALDON.2024"
-  ),
-  "LibHub" = c(
-    "LibHub (2024)" = "LibHub.2024"
-  ),
-  "LMS" = c(
-    "LMS (2020)" = "LMS.2020",
-    "LMS (2021)" = "LMS.2021",
-    "LMS (2022)" = "LMS.2022",
-    "LMS (2023)" = "LMS.2023",
-    "LMS (2024)" = "LMS.2024"
-  ),
-  "NC" = c(
-    "NC (2014)" = "NC.2014",
-    "NC (2015)" = "NC.2015",
-    "NC (2016)" = "NC.2016",
-    "NC (2017)" = "NC.2017",
-    "NC (2018)" = "NC.2018",
-    "NC (2019)" = "NC.2019",
-    "NC (2020)" = "NC.2020",
-    "NC (2021)" = "NC.2021",
-    "NC (2023)" = "NC.2023",
-    "NC (2024)" = "NC.2024"
-  ),
-  "QRF" = c(
-    "QRF (2019)" = "QRF.2019",
-    "QRF (2020)" = "QRF.2020",
-    "QRF (2021)" = "QRF.2021",
-    "QRF (2022)" = "QRF.2022.REPLENISHMENT",
-    "QRF (2023)" = "QRF.2023",
-    "QRF (2024)" = "QRF.2024"
-  ),
-  "Repair" = c(
-    "Repair (2020)" = "REPAIR.2020",
-    "Repair (2021)" = "REPAIR.2021",
-    "Repair (2022)" = "REPAIR.2022",
-    "Repair (2023)" = "REPAIR.2023",
-    "Repair (2024)" = "REPAIR.2024"
-  ),
-  "School Health Facilities" = c(
-    "Health (2022)" = "SCHOOL.HEALTH.FACILITIES.2022",
-    "Health (2024)" = "SCHOOL.HEALTH.FACILITIES.2024"
-  ),
-  "SPED/ILRC" = c(
-    "SPED (2024)" = "SPED.ILRC.2024"
-  )
-)
-
 # Combine and unlist to create a flat, named vector for lookups
-metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices, condition_metric_choices, program_metric_choices))
+metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices))
 
 # --- *** MODIFIED (Change 1 of 3): Added "clean name" lookup vector *** ---
 # This list combines all inner vectors, preserving their original, clean names
@@ -163,19 +75,7 @@ clean_metric_choices <- c(
   hr_metric_choices$`Specialization Data`,
   infra_metric_choices$Classroom,
   infra_metric_choices$Facilities,
-  infra_metric_choices$Resources,
-  condition_metric_choices$`Building Status`,
-  condition_metric_choices$`Classroom Status`,
-  program_metric_choices$`ALS/CLC`,
-  program_metric_choices$Electrification,
-  program_metric_choices$Gabaldon,
-  program_metric_choices$LibHub,
-  program_metric_choices$LMS,
-  program_metric_choices$NC,
-  program_metric_choices$QRF,
-  program_metric_choices$Repair,
-  program_metric_choices$`School Health Facilities`,
-  program_metric_choices$`SPED/ILRC`
+  infra_metric_choices$Resources
 )
 
 
@@ -183,9 +83,7 @@ clean_metric_choices <- c(
 all_selected_metrics <- reactive({
   hr_metrics <- input$Combined_HR_Toggles_Build
   infra_metrics <- input$Combined_Infra_Toggles_Build
-  condition_metrics <- input$Combined_Conditions_Toggles_Build
-  program_metrics <- input$Infra_Programs_Picker_Build # <-- RE-ADDED
-  c(hr_metrics, infra_metrics, condition_metrics, program_metrics) # <-- RE-ADDED
+  c(hr_metrics, infra_metrics)
 })
 
 
@@ -196,11 +94,6 @@ teacher_metrics <- c("TotalTeachers", "Total.Shortage", "Total.Excess")
 school_metrics <- c("Total.Schools","School.Size.Typology", "Modified.COC") 
 classroom_metrics <- c("Instructional.Rooms.2023.2024", "Classroom.Requirement", "Shifting")
 enrolment_metrics <- c("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
-buildingcondition_metrics <- c("Building.Count_Condemned...For.Demolition","Building.Count_For.Completion",             
-                               "Building.Count_For.Condemnation","Building.Count_Good.Condition",             
-                               "Building.Count_Needs.Major.Repair","Building.Count_Needs.Minor.Repair",         
-                               "Building.Count_On.going.Construction")
-roomcondition_metrics <- c("Number.of.Rooms_Condemned...For.Demolition","Number.of.Rooms_For.Completion","Number.of.Rooms_For.Condemnation","Number.of.Rooms_Good.Condition","Number.of.Rooms_Needs.Major.Repair","Number.of.Rooms_Needs.Minor.Repair","Number.of.Rooms_On.going.Construction")
 
 # --- Observer 1: Sync Pickers -> Toggles ---
 
@@ -270,48 +163,6 @@ observeEvent(input$preset_enrolment, {
   shinyWidgets::updatePickerInput(
     session, 
     "Combined_HR_Toggles_Build", 
-    selected = new_selection
-  )
-}, ignoreInit = TRUE)
-
-# Preset 5: Building Condition Focus Toggle
-observeEvent(input$preset_buildingcondition, {
-  # Isolate the selection from the NEW conditions picker
-  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
-  
-  if (input$preset_buildingcondition == TRUE) {
-    # Add the building condition metrics
-    new_selection <- union(current_selection, buildingcondition_metrics) 
-  } else {
-    # Remove the building condition metrics
-    new_selection <- setdiff(current_selection, buildingcondition_metrics)
-  }
-  
-  # Update the NEW conditions picker
-  shinyWidgets::updatePickerInput(
-    session, 
-    "Combined_Conditions_Toggles_Build", 
-    selected = new_selection
-  )
-}, ignoreInit = TRUE)
-
-# Preset 6: Room Condition Focus Toggle
-observeEvent(input$preset_roomcondition, {
-  # Isolate the selection from the NEW conditions picker
-  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
-  
-  if (input$preset_roomcondition == TRUE) {
-    # Add the room condition metrics
-    new_selection <- union(current_selection, roomcondition_metrics) 
-  } else {
-    # Remove the room condition metrics
-    new_selection <- setdiff(current_selection, roomcondition_metrics)
-  }
-  
-  # Update the NEW conditions picker
-  shinyWidgets::updatePickerInput(
-    session, 
-    "Combined_Conditions_Toggles_Build", 
     selected = new_selection
   )
 }, ignoreInit = TRUE)
@@ -507,7 +358,6 @@ output$back_button_ui <- renderUI({
   button_label <- ""  
   show_button <- FALSE 
   
-  # --- UPDATED: Added new filters to precedence list ---
   if (!is.null(state$clustering_filter)) {
     label_text <- stringr::str_trunc(state$clustering_filter, 20) 
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
@@ -522,15 +372,6 @@ output$back_button_ui <- renderUI({
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
   } else if (!is.null(state$coc_filter)) {
     label_text <- stringr::str_trunc(state$coc_filter, 20)
-    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
-  } else if (!is.null(state$water_filter)) { # --- NEW ---
-    label_text <- stringr::str_trunc(state$water_filter, 20)
-    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
-  } else if (!is.null(state$electricity_filter)) { # --- NEW ---
-    label_text <- stringr::str_trunc(state$electricity_filter, 20)
-    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
-  } else if (!is.null(state$ownership_filter)) { # --- NEW ---
-    label_text <- stringr::str_trunc(state$ownership_filter, 20)
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
   } else if (state$level == "District") {
     button_label <- "Undo Drilldown"; show_button <- TRUE
@@ -552,7 +393,6 @@ observeEvent(input$back_button, {
   state <- isolate(global_drill_state()) 
   new_state <- state 
   
-  # --- UPDATED: Added new filters to precedence list ---
   if (!is.null(state$clustering_filter)) {
     new_state$clustering_filter <- NULL
   } else if (!is.null(state$outlier_filter)) {
@@ -563,13 +403,8 @@ observeEvent(input$back_button, {
     new_state$typology_filter <- NULL 
   } else if (!is.null(state$coc_filter)) {
     new_state$coc_filter <- NULL      
-  } else if (!is.null(state$water_filter)) { # --- NEW ---
-    new_state$water_filter <- NULL
-  } else if (!is.null(state$electricity_filter)) { # --- NEW ---
-    new_state$electricity_filter <- NULL
-  } else if (!is.null(state$ownership_filter)) { # --- NEW ---
-    new_state$ownership_filter <- NULL
-  } else if (state$level == "District") {
+  } 
+  else if (state$level == "District") {
     new_state$level <- "Legislative.District"; new_state$legislative_district <- NULL 
   } else if (state$level == "Legislative.District") {
     new_state$level <- "Municipality"; new_state$municipality <- NULL
@@ -584,7 +419,7 @@ observeEvent(input$back_button, {
 })
 
 
-# --- *** UPDATED: DYNAMIC OBSERVER MANAGER (REVERTED) *** ---
+# --- *** UPDATED: DYNAMIC OBSERVER MANAGER *** ---
 observe({
   selected_metrics <- all_selected_metrics() 
   
@@ -626,29 +461,7 @@ observe({
       global_drill_state(state); global_trigger(global_trigger() + 1)
     }, ignoreNULL = TRUE, ignoreInit = TRUE)
     
-    # --- *** NEW OBSERVERS ADDED *** ---
-    observeEvent(event_data("plotly_click", source = "ownership_click"), {
-      d <- event_data("plotly_click", source = "ownership_click"); if (is.null(d$y)) return() 
-      state <- isolate(global_drill_state()); state$ownership_filter <- d$y
-      global_drill_state(state); global_trigger(global_trigger() + 1)
-    }, ignoreNULL = TRUE, ignoreInit = TRUE)
-    
-    observeEvent(event_data("plotly_click", source = "electricity_click"), {
-      d <- event_data("plotly_click", source = "electricity_click"); if (is.null(d$y)) return() 
-      state <- isolate(global_drill_state()); state$electricity_filter <- d$y
-      global_drill_state(state); global_trigger(global_trigger() + 1)
-    }, ignoreNULL = TRUE, ignoreInit = TRUE)
-    
-    observeEvent(event_data("plotly_click", source = "water_click"), {
-      d <- event_data("plotly_click", source = "water_click"); if (is.null(d$y)) return() 
-      state <- isolate(global_drill_state()); state$water_filter <- d$y
-      global_drill_state(state); global_trigger(global_trigger() + 1)
-    }, ignoreNULL = TRUE, ignoreInit = TRUE)
-    # --- *** END NEW OBSERVERS *** ---
-    
-    
     # --- Geographic Drilldown Observer (Unchanged) ---
-    # This now applies to ALL metrics, including programs
     observeEvent(event_data("plotly_click", source = current_metric_source), {
       state <- isolate(global_drill_state()); if (state$level == "District") return() 
       d <- event_data("plotly_click", source = current_metric_source); if (is.null(d$y)) return()
@@ -687,15 +500,11 @@ filtered_data <- reactive({
     req(state$region, state$division, state$municipality, state$legislative_district); temp_data <- temp_data %>% filter(Region == state$region, Division == state$division, Municipality == state$municipality, Legislative.District == state$legislative_district)
   }
   
-  # --- UPDATED: Added new filters ---
   if (!is.null(state$coc_filter)) { temp_data <- temp_data %>% filter(Modified.COC == state$coc_filter) }
   if (!is.null(state$typology_filter)) { temp_data <- temp_data %>% filter(School.Size.Typology == state$typology_filter) }
   if (!is.null(state$shifting_filter)) { temp_data <- temp_data %>% filter(Shifting == state$shifting_filter) }
   if (!is.null(state$outlier_filter)) { temp_data <- temp_data %>% filter(Outlier.Status == state$outlier_filter) }
   if (!is.null(state$clustering_filter)) { temp_data <- temp_data %>% filter(Clustering.Status == state$clustering_filter) }
-  if (!is.null(state$ownership_filter)) { temp_data <- temp_data %>% filter(OwnershipType == state$ownership_filter) } # --- NEW ---
-  if (!is.null(state$electricity_filter)) { temp_data <- temp_data %>% filter(ElectricitySource == state$electricity_filter) } # --- NEW ---
-  if (!is.null(state$water_filter)) { temp_data <- temp_data %>% filter(WaterSource == state$water_filter) } # --- NEW ---
   
   temp_data
 })
@@ -704,19 +513,15 @@ filtered_data <- reactive({
 summarized_data_long <- reactive({
   
   selected_metrics_list <- all_selected_metrics()
-  # --- MODIFICATION: Check for empty selection ---
-  if (length(selected_metrics_list) == 0) {
-    # Return an empty tibble with the correct structure
-    return(tibble(Category = character(), Metric = character(), Value = numeric()))
-  }
-  # --- END MODIFICATION ---
+  req(length(selected_metrics_list) > 0) 
   
   state <- global_drill_state() 
-  group_by_col <- state$level  
+  group_by_col <- state$level 
   metrics_to_process <- selected_metrics_list 
   data_in <- filtered_data()
   summaries_list <- list()
   
+  # --- Handle Special Metric: Total.Schools ---
   if ("Total.Schools" %in% metrics_to_process) {
     school_count_summary <- data_in %>%
       group_by(!!sym(group_by_col)) %>%
@@ -726,21 +531,115 @@ summarized_data_long <- reactive({
     summaries_list[["school_count"]] <- school_count_summary
   }
   
-  # --- UPDATED: Added new metrics to categorical list ---
-  categorical_metrics <- c("Modified.COC", "School.Size.Typology", "Total.Schools","Shifting", "Completion",
-                           "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")
+  # --- NEW: Handle Special Metric: Seats ---
+  # This will grab the two specific columns for the stacked bar
+  if ("Seats" %in% metrics_to_process) {
+    seats_cols <- c("Total.Total.Seat", "Total.Seats.Shortage")
+    existing_seats_cols <- intersect(seats_cols, names(data_in))
+    
+    if (length(existing_seats_cols) > 0) {
+      
+      # Ensure columns are numeric before summarizing
+      seats_data <- data_in %>%
+        mutate(across(all_of(existing_seats_cols), ~ as.numeric(as.character(.))))
+      
+      seats_summary <- seats_data %>%
+        select(!!sym(group_by_col), all_of(existing_seats_cols)) %>%
+        group_by(!!sym(group_by_col)) %>%
+        # Sum up each seats column separately
+        summarise(across(all_of(existing_seats_cols), ~ sum(.x, na.rm = TRUE)), .groups = "drop") %>%
+        # Pivot to long format (Metric = "Total.Total.Seat", etc.)
+        pivot_longer(
+          cols = all_of(existing_seats_cols), 
+          names_to = "Metric", 
+          values_to = "Value"
+        ) %>%
+        rename(Category = !!sym(group_by_col))
+      
+      summaries_list[["seats"]] <- seats_summary
+    }
+  }
   
+  # --- NEW: Handle Special Metric: Building ---
+  if ("Building" %in% metrics_to_process) {
+    
+    # Find all columns that start with "Building.Count"
+    all_cols <- names(data_in)
+    building_cols <- all_cols[startsWith(all_cols, "Building.Count")]
+    
+    if (length(building_cols) > 0) {
+      
+      # Ensure columns are numeric
+      building_data <- data_in %>%
+        mutate(across(all_of(building_cols), ~ as.numeric(as.character(.))))
+      
+      building_summary <- building_data %>%
+        select(!!sym(group_by_col), all_of(building_cols)) %>%
+        group_by(!!sym(group_by_col)) %>%
+        summarise(across(all_of(building_cols), ~ sum(.x, na.rm = TRUE)), .groups = "drop") %>%
+        pivot_longer(
+          cols = all_of(building_cols), 
+          names_to = "Metric", 
+          values_to = "Value"
+        ) %>%
+        rename(Category = !!sym(group_by_col))
+      
+      summaries_list[["building"]] <- building_summary
+    }
+  }
+  
+  if ("RoomCondition" %in% metrics_to_process) {
+    
+    # Find all columns that start with "Number.of.Rooms"
+    all_cols <- names(data_in)
+    room_cols <- all_cols[startsWith(all_cols, "Number.of.Rooms")]
+    
+    if (length(room_cols) > 0) {
+      
+      # Ensure columns are numeric
+      room_data <- data_in %>%
+        mutate(across(all_of(room_cols), ~ as.numeric(as.character(.))))
+      
+      room_summary <- room_data %>%
+        select(!!sym(group_by_col), all_of(room_cols)) %>%
+        group_by(!!sym(group_by_col)) %>%
+        summarise(across(all_of(room_cols), ~ sum(.x, na.rm = TRUE)), .groups = "drop") %>%
+        pivot_longer(
+          cols = all_of(room_cols), 
+          names_to = "Metric", 
+          values_to = "Value"
+        ) %>%
+        rename(Category = !!sym(group_by_col))
+      
+      summaries_list[["room_condition"]] <- room_summary
+    }
+  }
+  
+  # --- Handle Standard Numeric Metrics ---
+  
+  # --- Handle Standard Numeric Metrics ---
+  
+  # Define ALL metrics that are NOT standard numeric sums.
+  # "Seats" is added here to prevent it from being processed again below.
+  categorical_metrics <- c(
+    "Modified.COC", "School.Size.Typology", "Total.Schools", "Shifting", "Completion",
+    "Outlier.Status", "Clustering.Status", 
+    "Seats", "Building","RoomCondition" # IMPORTANT: Add "Seats" here
+  )
+  
+  # Find metrics that are left over and are standard numeric sums
   numeric_metrics_to_process <- setdiff(metrics_to_process, categorical_metrics)
   existing_metrics <- intersect(numeric_metrics_to_process, names(data_in))
   
   if (length(existing_metrics) > 0) {
-    data_in <- data_in %>%
+    data_in_numeric <- data_in %>%
       mutate(across(all_of(existing_metrics), ~ as.numeric(as.character(.))))
     
-    valid_metrics <- existing_metrics[sapply(data_in[existing_metrics], is.numeric)]
+    # Check which are *actually* numeric after conversion
+    valid_metrics <- existing_metrics[sapply(data_in_numeric[existing_metrics], is.numeric)]
     
     if (length(valid_metrics) > 0) {
-      numeric_summary <- data_in %>%
+      numeric_summary <- data_in_numeric %>%
         select(!!sym(group_by_col), all_of(valid_metrics)) %>%
         pivot_longer(cols = all_of(valid_metrics), names_to = "Metric", values_to = "Value") %>%
         group_by(!!sym(group_by_col), Metric) %>%
@@ -750,6 +649,7 @@ summarized_data_long <- reactive({
     }
   }
   
+  # --- Combine all summaries ---
   if (length(summaries_list) == 0) {
     return(tibble(Category = character(), Metric = character(), Value = numeric()))
   }
@@ -758,7 +658,7 @@ summarized_data_long <- reactive({
 })
 
 
-# --- Dynamic UI Dashboard Grid (REVERTED) ---
+# --- Dynamic UI Dashboard Grid (UPDATED) ---
 output$dashboard_grid <- renderUI({
   
   selected_metrics <- all_selected_metrics() 
@@ -778,9 +678,6 @@ output$dashboard_grid <- renderUI({
       )
     )
   }
-  
-  # --- *** Pre-filter data for plots *** ---
-  metric_plot_data <- summarized_data_long()
   
   # --- 1. Create Plotly Renders ---
   walk(selected_metrics, ~{
@@ -810,23 +707,19 @@ output$dashboard_grid <- renderUI({
     if (!is.null(state$shifting_filter)) { filter_parts <- c(filter_parts, state$shifting_filter) }
     if (!is.null(state$outlier_filter)) { filter_parts <- c(filter_parts, state$outlier_filter) }
     if (!is.null(state$clustering_filter)) { filter_parts <- c(filter_parts, state$clustering_filter) }
-    if (!is.null(state$ownership_filter)) { filter_parts <- c(filter_parts, state$ownership_filter) } # --- NEW ---
-    if (!is.null(state$electricity_filter)) { filter_parts <- c(filter_parts, state$electricity_filter) } # --- NEW ---
-    if (!is.null(state$water_filter)) { filter_parts <- c(filter_parts, state$water_filter) } # --- NEW ---
     
     if (length(filter_parts) > 0) {
       plot_title <- paste0(plot_title, " (Filtered by: ", paste(filter_parts, collapse = ", "), ")")
     }
     
-    # --- UPDATED IF CONDITION ---
-    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", 
-                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")) {
+    # --- UPDATED IF/ELSE IF CONDITION ---
+    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", "Outlier.Status", "Clustering.Status")) {
       
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
           bar_data <- tibble() 
           if (current_metric == "Total.Schools") {
-            bar_data <- metric_plot_data %>%
+            bar_data <- summarized_data_long() %>%
               filter(Metric == "Total.Schools", !is.na(Category)) %>%
               rename(Count = Value) 
           } else {
@@ -850,13 +743,10 @@ output$dashboard_grid <- renderUI({
             current_metric == "Shifting" ~ "shifting_bar_click",
             current_metric == "Outlier.Status" ~ "outlier_click", 
             current_metric == "Clustering.Status" ~ "clustering_click",
-            current_metric == "OwnershipType" ~ "ownership_click", # --- NEW ---
-            current_metric == "ElectricitySource" ~ "electricity_click", # --- NEW ---
-            current_metric == "WaterSource" ~ "water_click", # --- NEW ---
             TRUE ~ paste0("plot_source_", current_metric) 
           )
           
-          click_source_name <- if (plot_source %in% c("coc_pie_click", "typology_bar_click", "shifting_bar_click", "outlier_click", "clustering_click", "ownership_click", "electricity_click", "water_click")) {
+          click_source_name <- if (plot_source %in% c("coc_pie_click", "typology_bar_click", "shifting_bar_click", "outlier_click", "clustering_click")) {
             plot_source
           } else {
             paste0("plot_source_", current_metric) 
@@ -881,12 +771,219 @@ output$dashboard_grid <- renderUI({
         })
       })
       
-    } else {
-      # --- RENDER DEFAULT DRILLDOWN BAR CHART (Unchanged) ---
-      # --- *** PROGRAM COLUMNS WILL NOW BE RENDERED HERE *** ---
+      # --- NEW BLOCK: Handle "Seats" Stacked Bar Chart ---
+    } else if (current_metric == "Seats") {
+      
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
-          plot_data <- metric_plot_data %>%
+          # 1. Get and prepare data
+          plot_data <- summarized_data_long() %>%
+            filter(
+              Metric %in% c("Total.Total.Seat", "Total.Seats.Shortage"), 
+              !is.na(Category)
+            ) %>%
+            mutate(
+              # Rename for cleaner legend labels
+              Metric = recode(Metric, 
+                              "Total.Total.Seat" = "Total Seats",
+                              "Total.Seats.Shortage" = "Seats Shortage"
+              ),
+              Metric = factor(Metric, levels = c("Total Seats", "Seats Shortage"))
+            )
+          
+          
+          
+          if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
+            return(plot_ly() %>% layout(title = list(text = plot_title, x = 0.05), annotations = list(x = 0.5, y = 0.5, text = "No data available", showarrow = FALSE)))
+          }
+          
+          # 2. Create data for the "Total" labels
+          plot_data_totals <- plot_data %>%
+            group_by(Category) %>%
+            summarise(TotalValue = sum(Value, na.rm = TRUE), .groups = "drop")
+          
+          # 3. Define the specific colors
+          seat_colors <- c("Total Seats" = "#1f77b4", "Seats Shortage" = "#dc3545") # Blue, Red
+          
+          # 4. Set x-axis range to make space for total labels
+          xaxis_range <- c(0, max(plot_data_totals$TotalValue, na.rm = TRUE) * 1.3)
+          
+          # 5. Create the stacked bar plot
+          plot_ly(
+            data = plot_data, 
+            y = ~Category, 
+            x = ~Value, 
+            type = "bar",
+            orientation = 'h', 
+            color = ~Metric,      # Use the recoded Metric for color
+            colors = seat_colors, # Apply the defined colors
+            source = paste0("plot_source_", current_metric)
+            # We don't add segment texttemplate, only the total
+          ) %>%
+            layout(
+              barmode = 'stack', # <-- Key for stacking
+              yaxis = list(title = "", categoryorder = "total descending", autorange = "reversed"),
+              xaxis = list(title = "Total Value", tickformat = ',.0f', range = xaxis_range),
+              legend = list(orientation = 'h', xanchor = 'center', x = 0.5, y = 1.06),
+              margin = list(l = 150)
+            ) %>%
+            # 6. Add the total labels at the end of the bar
+            add_text(
+              data = plot_data_totals, # Use the totals data
+              x = ~TotalValue,         # Position at the total value
+              y = ~Category, 
+              text = ~scales::comma(TotalValue, 1), # Format the total value
+              textposition = "middle right",       # Place it just outside
+              textfont = list(color = '#000000', size = 10),
+              showlegend = FALSE, 
+              inherit = FALSE, 
+              cliponaxis = FALSE
+            )
+          
+        }, error = function(e) {
+          # ... (Error handling) ...
+        })
+      })
+      
+    } else if (current_metric == "Building") {
+    
+    output[[paste0("plot_", current_metric)]] <- renderPlotly({
+      tryCatch({
+        # 1. Get and prepare data
+        plot_data <- summarized_data_long() %>%
+          filter(
+            startsWith(Metric, "Building.Count"), 
+            !is.na(Category)
+          ) %>%
+          mutate(
+            # Clean up names for legend: "Building.Count.TypeA" -> "TypeA"
+            Metric = stringr::str_remove(Metric, "Building.Count.")
+          )
+        
+        if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
+          return(plot_ly() %>% layout(title = list(text = plot_title, x = 0.05), annotations = list(x = 0.5, y = 0.5, text = "No data available", showarrow = FALSE)))
+        }
+        
+        # 2. Create data for the "Total" labels
+        plot_data_totals <- plot_data %>%
+          group_by(Category) %>%
+          summarise(TotalValue = sum(Value, na.rm = TRUE), .groups = "drop")
+        
+        # 3. Set x-axis range
+        xaxis_range <- c(0, max(plot_data_totals$TotalValue, na.rm = TRUE) * 1.3)
+        
+        # 4. Create the stacked bar plot
+        plot_ly(
+          data = plot_data, 
+          y = ~Category, 
+          x = ~Value, 
+          type = "bar",
+          orientation = 'h', 
+          color = ~Metric,      # Color by the cleaned metric name
+          source = paste0("plot_source_", current_metric)
+        ) %>%
+          layout(
+            barmode = 'stack', 
+            yaxis = list(title = "", categoryorder = "total descending", autorange = "reversed"),
+            xaxis = list(title = "Total Value", tickformat = ',.0f', range = xaxis_range),
+            legend = list(orientation = 'h', xanchor = 'center', x = 0.5, y = 1.35),
+            margin = list(l = 150)
+          ) %>%
+          # 5. Add the total labels
+          add_text(
+            data = plot_data_totals, 
+            x = ~TotalValue,
+            y = ~Category, 
+            text = ~scales::comma(TotalValue, 1), 
+            textposition = "middle right",
+            textfont = list(color = '#000000', size = 10),
+            showlegend = FALSE, 
+            inherit = FALSE, 
+            cliponaxis = FALSE
+          )
+        
+      }, error = function(e) {
+        # ... (Error handling) ...
+      })
+    })
+    
+    } else if (current_metric == "RoomCondition") {
+      
+      output[[paste0("plot_", current_metric)]] <- renderPlotly({
+        tryCatch({
+          # 1. Get and prepare data
+          plot_data <- summarized_data_long() %>%
+            filter(
+              startsWith(Metric, "Number.of.Rooms"), # <-- Search for Room columns
+              !is.na(Category)
+            ) %>%
+            mutate(
+              # Clean up names for legend: "Number.of.Rooms.TypeA" -> "TypeA"
+              Metric = stringr::str_remove(Metric, "Number.of.Rooms.")
+            )
+          
+          if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
+            return(plot_ly() %>% layout(title = list(text = plot_title, x = 0.05), annotations = list(x = 0.5, y = 0.5, text = "No data available", showarrow = FALSE)))
+          }
+          
+          # 2. Create data for the "Total" labels
+          plot_data_totals <- plot_data %>%
+            group_by(Category) %>%
+            summarise(TotalValue = sum(Value, na.rm = TRUE), .groups = "drop")
+          
+          # 3. Set x-axis range
+          xaxis_range <- c(0, max(plot_data_totals$TotalValue, na.rm = TRUE) * 1.3)
+          
+          # 4. Create the stacked bar plot
+          plot_ly(
+            data = plot_data, 
+            y = ~Category, 
+            x = ~Value, 
+            type = "bar",
+            orientation = 'h', 
+            color = ~Metric,      # Color by the cleaned metric name
+            source = paste0("plot_source_", current_metric)
+          ) %>%
+            layout(
+              barmode = 'stack', 
+              yaxis = list(title = "", categoryorder = "total descending", autorange = "reversed"),
+              xaxis = list(title = "Total Value", tickformat = ',.0f', range = xaxis_range),
+              
+              # --- Applying the correct legend layout ---
+              legend = list(
+                orientation = 'h',   
+                xanchor = 'center',  
+                x = 0.5,             
+                yanchor = 'bottom',  
+                y = 1.02             
+              ),
+              margin = list(l = 150, t = 100) # Add top margin for legend
+              
+            ) %>%
+            # 5. Add the total labels
+            add_text(
+              data = plot_data_totals, 
+              x = ~TotalValue,
+              y = ~Category, 
+              text = ~scales::comma(TotalValue, 1), 
+              textposition = "middle right",
+              textfont = list(color = '#000000', size = 10),
+              showlegend = FALSE, 
+              inherit = FALSE, 
+              cliponaxis = FALSE
+            )
+          
+        }, error = function(e) {
+          # ... (Error handling) ...
+        })
+      })
+    }
+      
+      else {
+      # --- RENDER DEFAULT DRILLDOWN BAR CHART (Unchanged) ---
+      output[[paste0("plot_", current_metric)]] <- renderPlotly({
+        tryCatch({
+          plot_data <- summarized_data_long() %>%
             filter(Metric == current_metric, !is.na(Category))
           
           if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
@@ -923,13 +1020,12 @@ output$dashboard_grid <- renderUI({
     current_metric_name <- names(clean_metric_choices)[clean_metric_choices == current_metric]
     summary_card_content <- NULL
     
-    # --- UPDATED IF CONDITION ---
-    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", 
-                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")) {
+    # --- UPDATED IF/ELSE IF CONDITION ---
+    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", "Outlier.Status", "Clustering.Status")) {
       
       total_count <- tryCatch({
         if (current_metric == "Total.Schools") {
-          metric_plot_data %>% filter(Metric == "Total.Schools") %>% pull(Value) %>% sum(na.rm = TRUE)
+          summarized_data_long() %>% filter(Metric == "Total.Schools") %>% pull(Value) %>% sum(na.rm = TRUE)
         } else {
           nrow(filtered_data()) 
         }
@@ -938,7 +1034,7 @@ output$dashboard_grid <- renderUI({
       summary_title <- if (current_metric == "Total.Schools") paste("Total", current_metric_name) else "Total Records in View"
       
       summary_card_content <- card(
-        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
+        style = "background-color: #1f77b445; padding: 0px;", # Light blue, tight padding
         tags$h5(
           summary_title, 
           style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
@@ -949,14 +1045,111 @@ output$dashboard_grid <- renderUI({
         )
       )
       
-    } else {
-      # --- *** PROGRAM COLUMNS WILL NOW BE HANDLED HERE *** ---
+      # --- NEW BLOCK: Handle "Seats" Summary Cards ---
+    } else if (current_metric == "Seats") {
+      
+      # Get the total for "Total.Total.Seat"
+      total_seats_val <- tryCatch({
+        summarized_data_long() %>% 
+          filter(Metric == "Total.Total.Seat") %>% 
+          pull(Value) %>% 
+          sum(na.rm = TRUE)
+      }, error = function(e) { 0 })
+      
+      # Get the total for "Total.Seats.Shortage"
+      total_shortage_val <- tryCatch({
+        summarized_data_long() %>% 
+          filter(Metric == "Total.Seats.Shortage") %>% 
+          pull(Value) %>% 
+          sum(na.rm = TRUE)
+      }, error = function(e) { 0 })
+      
+      # Use layout_columns for a 50/50 split
+      summary_card_content <- bslib::layout_columns(
+        col_widths = 6, # Each card takes 6 of 12 columns
+        gap = "10px",    # Add a small gap between cards
+        
+        # Card 1: Total Seats (Blue)
+        bslib::card(
+          style = "background-color: #1f77b445; padding: 0px;", # Light blue
+          tags$h5(
+            "Total Seats", 
+            style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;"
+          ),
+          tags$h2(
+            scales::comma(total_seats_val), 
+            style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;"
+          )
+        ),
+        
+        # Card 2: Total Seats Shortage (Red)
+        bslib::card(
+          style = "background-color: #dc354545; padding: 0px;", # Light red
+          tags$h5(
+            "Total Seats Shortage", 
+            style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;"
+          ),
+          tags$h2(
+            scales::comma(total_shortage_val), 
+            style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;"
+          )
+        )
+      )
+      
+      # --- NEW BLOCK: Handle "Building" Summary Card ---
+    } else if (current_metric == "Building") {
+      
+      # Get the total for ALL building columns
+      total_building_val <- tryCatch({
+        summarized_data_long() %>% 
+          filter(startsWith(Metric, "Building.Count")) %>% 
+          pull(Value) %>% 
+          sum(na.rm = TRUE)
+      }, error = function(e) { 0 })
+      
+      summary_card_content <- card(
+        style = "background-color: #1f77b445; padding: 0px;", # Light blue
+        tags$h5(
+          "Total Buildings", 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;"
+        ),
+        tags$h2(
+          scales::comma(total_building_val), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;"
+        )
+      )
+      
+    } else if (current_metric == "RoomCondition") {
+      
+      # Get the total for ALL room columns
+      total_room_val <- tryCatch({
+        summarized_data_long() %>% 
+          filter(startsWith(Metric, "Number.of.Rooms")) %>% 
+          pull(Value) %>% 
+          sum(na.rm = TRUE)
+      }, error = function(e) { 0 })
+      
+      summary_card_content <- card(
+        style = "background-color: #1f77b445; padding: 0px;", # Light blue
+        tags$h5(
+          "Total Rooms", 
+          style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;"
+        ),
+        tags$h2(
+          scales::comma(total_room_val), 
+          style = "font-weight: 700; color: #000; margin-top: 2px; margin-bottom: 2px;"
+        )
+      )
+    }
+    
+    else {
+      
       total_val <- tryCatch({
-        metric_plot_data %>% filter(Metric == current_metric) %>% pull(Value) %>% sum(na.rm = TRUE)
+        summarized_data_long() %>% filter(Metric == current_metric) %>% pull(Value) %>% sum(na.rm = TRUE)
       }, error = function(e) { 0 }) 
       
       summary_card_content <- card(
-        style = "background-color: #1f77b445; padding: 0px;", # Light yellow, tight padding
+        style = "background-color: #1f77b445; padding: 0px;", # Light blue, tight padding
         tags$h5(
           paste("Total", current_metric_name), 
           style = "font-weight: 600; color: #555; margin-top: 2px; margin-bottom: 2px;" # Tighter margins
@@ -1028,7 +1221,7 @@ output$build_dashboard_school_details_ui <- renderUI({
     
     card(full_screen = TRUE,
          card_header(strong("Classroom Data")),
-         tableOutput("schooldCSS_build3")),
+         tableOutput("schooldetails_build3")),
     
     card(full_screen = TRUE,
          card_header(div(strong("Specialization Data"),
