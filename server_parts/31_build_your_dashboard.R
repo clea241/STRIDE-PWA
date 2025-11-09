@@ -53,15 +53,33 @@ infra_metric_choices <- list(
                   "Number of Buildings" = "Buildings",
                   "Buildable Space" = "Buidable_space",
                   "Major Repairs Needed" = "Major.Repair.2023.2024"),
-  `Facilities` = c("Total Seats Available" = "Total.Seats.2023.2024",
-                   "Total Seats Shortage" = "Total.Seats.Shortage.2023.2024"),
+  `Facilities` = c("Seats Inventory" = "Total.Total.Seat",
+                   "Seats Shortage" = "Total.Seats.Shortage"),
   `Resources` = c("Ownership Type" = "OwnershipType",
                   "Electricity Source" = "ElectricitySource",
                   "Water Source" = "WaterSource"
   ))
 
+condition_metric_choices <- list(
+  `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
+                        "For Condemnation (Building)" = "Building.Count_For.Condemnation",
+                        "For Completion (Building)" = "Building.Count_For.Completion",
+                        "On-going Construction (Building)" = "Building.Count_On.going.Construction",
+                        "Good Condition (Building)" = "Building.Count_Good.Condition",
+                        "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
+                        "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
+  `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
+                         "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
+                         "For Completion (Room)" = "Number.of.Rooms_For.Completion",
+                         "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
+                         "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
+                         "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
+                         "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair")
+  
+)
+
 # Combine and unlist to create a flat, named vector for lookups
-metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices))
+metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices, condition_metric_choices))
 
 # --- *** MODIFIED (Change 1 of 3): Added "clean name" lookup vector *** ---
 # This list combines all inner vectors, preserving their original, clean names
@@ -73,7 +91,9 @@ clean_metric_choices <- c(
   hr_metric_choices$`Specialization Data`,
   infra_metric_choices$Classroom,
   infra_metric_choices$Facilities,
-  infra_metric_choices$Resources
+  infra_metric_choices$Resources,
+  condition_metric_choices$`Building Status`,
+  condition_metric_choices$`Classroom Status`
 )
 
 
@@ -81,7 +101,8 @@ clean_metric_choices <- c(
 all_selected_metrics <- reactive({
   hr_metrics <- input$Combined_HR_Toggles_Build
   infra_metrics <- input$Combined_Infra_Toggles_Build
-  c(hr_metrics, infra_metrics)
+  condition_metrics <- input$Combined_Conditions_Toggles_Build
+  c(hr_metrics, infra_metrics,condition_metrics)
 })
 
 
@@ -92,6 +113,11 @@ teacher_metrics <- c("TotalTeachers", "Total.Shortage", "Total.Excess")
 school_metrics <- c("Total.Schools","School.Size.Typology", "Modified.COC") 
 classroom_metrics <- c("Instructional.Rooms.2023.2024", "Classroom.Requirement", "Shifting")
 enrolment_metrics <- c("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
+buildingcondition_metrics <- c("Building.Count_Condemned...For.Demolition","Building.Count_For.Completion",             
+                               "Building.Count_For.Condemnation","Building.Count_Good.Condition",             
+                                "Building.Count_Needs.Major.Repair","Building.Count_Needs.Minor.Repair",         
+                               "Building.Count_On.going.Construction")
+roomcondition_metrics <- c("Number.of.Rooms_Condemned...For.Demolition","Number.of.Rooms_For.Completion","Number.of.Rooms_For.Condemnation","Number.of.Rooms_Good.Condition","Number.of.Rooms_Needs.Major.Repair","Number.of.Rooms_Needs.Minor.Repair","Number.of.Rooms_On.going.Construction")
 
 # --- Observer 1: Sync Pickers -> Toggles ---
 
@@ -161,6 +187,48 @@ observeEvent(input$preset_enrolment, {
   shinyWidgets::updatePickerInput(
     session, 
     "Combined_HR_Toggles_Build", 
+    selected = new_selection
+  )
+}, ignoreInit = TRUE)
+
+# Preset 5: Building Condition Focus Toggle
+observeEvent(input$preset_buildingcondition, {
+  # Isolate the selection from the NEW conditions picker
+  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
+  
+  if (input$preset_buildingcondition == TRUE) {
+    # Add the building condition metrics
+    new_selection <- union(current_selection, buildingcondition_metrics) 
+  } else {
+    # Remove the building condition metrics
+    new_selection <- setdiff(current_selection, buildingcondition_metrics)
+  }
+  
+  # Update the NEW conditions picker
+  shinyWidgets::updatePickerInput(
+    session, 
+    "Combined_Conditions_Toggles_Build", 
+    selected = new_selection
+  )
+}, ignoreInit = TRUE)
+
+# Preset 6: Room Condition Focus Toggle
+observeEvent(input$preset_roomcondition, {
+  # Isolate the selection from the NEW conditions picker
+  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
+  
+  if (input$preset_roomcondition == TRUE) {
+    # Add the room condition metrics
+    new_selection <- union(current_selection, roomcondition_metrics) 
+  } else {
+    # Remove the room condition metrics
+    new_selection <- setdiff(current_selection, roomcondition_metrics)
+  }
+  
+  # Update the NEW conditions picker
+  shinyWidgets::updatePickerInput(
+    session, 
+    "Combined_Conditions_Toggles_Build", 
     selected = new_selection
   )
 }, ignoreInit = TRUE)

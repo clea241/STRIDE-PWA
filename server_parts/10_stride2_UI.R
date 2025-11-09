@@ -676,6 +676,28 @@ ease;
                   tags$span("Enrolment Focus", style = "margin-left: 10px; font-size: 1.1rem;")
                 ),
                 value = FALSE 
+              ),
+              
+              tags$div(style = "margin-top: 5px;"), # Spacer
+              
+              shinyWidgets::awesomeCheckbox(
+                inputId = "preset_buildingcondition",
+                label = tags$div(
+                  style = "display: flex; align-items: center;", 
+                  tags$span("Building Condition", style = "margin-left: 10px; font-size: 1.1rem;")
+                ),
+                value = FALSE 
+              ),
+              
+              tags$div(style = "margin-top: 5px;"), # Spacer
+              
+              shinyWidgets::awesomeCheckbox(
+                inputId = "preset_roomcondition",
+                label = tags$div(
+                  style = "display: flex; align-items: center;", 
+                  tags$span("Room Condition", style = "margin-left: 10px; font-size: 1.1rem;")
+                ),
+                value = FALSE 
               )
               # --- END OF NEW PRESET ---
               # --- End of Wrapper Div ---
@@ -734,12 +756,56 @@ ease;
                                 "Buildings" = "Buildings",
                                 "Buildable Space" = "Buidable_space",
                                 "Major Repairs Needed" = "Major.Repair.2023.2024"),
-                `Facilities` = c("Total Seats Available" = "Total.Seats.2023.2024",
-                                 "Total Seats Shortage" = "Total.Seats.Shortage.2023.2024"),
+                `Facilities` = c("Seats Inventory" = "Total.Total.Seat",
+                                 "Seats Shortage" = "Total.Seats.Shortage"),
+                `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
+                                      "For Condemnation (Building)" = "Building.Count_For.Condemnation",
+                                      "For Completion (Building)" = "Building.Count_For.Completion",
+                                      "On-going Construction (Building)" = "Building.Count_On.going.Construction",
+                                      "Good Condition (Building)" = "Building.Count_Good.Condition",
+                                      "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
+                                      "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
+                `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
+                                       "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
+                                       "For Completion (Room)" = "Number.of.Rooms_For.Completion",
+                                       "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
+                                       "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
+                                       "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
+                                       "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair"),
                 `Resources` = c("Ownership Type" = "OwnershipType",
                                 "Electricity Source" = "ElectricitySource",
                                 "Water Source" = "WaterSource"
                 )),
+              multiple = TRUE,
+              options = pickerOptions(
+                `actions-box` = TRUE,
+                liveSearch = TRUE,
+                header = "Select Data Columns",
+                title = "No Data Column Selected",
+                dropupAuto = FALSE,
+                dropup = FALSE
+              )
+            ),
+            
+            pickerInput(
+              inputId = "Combined_Conditions_Toggles_Build", # New combined ID
+              label = strong("Select Condition Metrics"),
+              choices = list(
+                `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
+                                      "For Condemnation (Building)" = "Building.Count_For.Condemnation",
+                                      "For Completion (Building)" = "Building.Count_For.Completion",
+                                      "On-going Construction (Building)" = "Building.Count_On.going.Construction",
+                                      "Good Condition (Building)" = "Building.Count_Good.Condition",
+                                      "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
+                                      "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
+                `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
+                                       "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
+                                       "For Completion (Room)" = "Number.of.Rooms_For.Completion",
+                                       "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
+                                       "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
+                                       "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
+                                       "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair")
+                ),
               multiple = TRUE,
               options = pickerOptions(
                 `actions-box` = TRUE,
