@@ -1,12 +1,19 @@
 # Build your Dashboard
 
-# --- Drilldown State Management ---
+# --- Drilldown State Management (UPDATED) ---
 global_drill_state <- reactiveVal(list(
   level = "Region", 
   region = NULL,    
   division = NULL,
   municipality = NULL,         
   legislative_district = NULL, 
+  
+  # --- NEW FILTERS ADDED ---
+  ownership_filter = NULL,
+  electricity_filter = NULL,
+  water_filter = NULL,
+  # --- END NEW FILTERS ---
+  
   coc_filter = NULL,      
   typology_filter = NULL, 
   shifting_filter = NULL,
@@ -26,7 +33,7 @@ reactive_selected_school_id <- reactiveVal(NULL)
 # This must match the 'choices' in your 10_stride2_UI.R pickers
 hr_metric_choices <- list(
   `School Information` = c("Number of Schools" = "Total.Schools",
-    "School Size Typology" = "School.Size.Typology", 
+                           "School Size Typology" = "School.Size.Typology", 
                            "Curricular Offering" = "Modified.COC"),
   `Teaching Data` = c("Number of Teachers" = "TotalTeachers", 
                       "Teacher Excess" = "Total.Excess", 
@@ -53,15 +60,98 @@ infra_metric_choices <- list(
                   "Number of Buildings" = "Buildings",
                   "Buildable Space" = "Buidable_space",
                   "Major Repairs Needed" = "Major.Repair.2023.2024"),
-  `Facilities` = c("Total Seats Available" = "Total.Seats.2023.2024",
-                   "Total Seats Shortage" = "Total.Seats.Shortage.2023.2024"),
+  `Facilities` = c("Seats Inventory" = "Total.Total.Seat",
+                   "Seats Shortage" = "Total.Seats.Shortage"),
+  # --- MOVED Resources to categorical ---
   `Resources` = c("Ownership Type" = "OwnershipType",
                   "Electricity Source" = "ElectricitySource",
                   "Water Source" = "WaterSource"
   ))
 
+condition_metric_choices <- list(
+  `Building Status` = c("Condemned (Building)" = "Building.Count_Condemned...For.Demolition",
+                        "For Condemnation (Building)" = "Building.Count_For.Condemnation",
+                        "For Completion (Building)" = "Building.Count_For.Completion",
+                        "On-going Construction (Building)" = "Building.Count_On.going.Construction",
+                        "Good Condition (Building)" = "Building.Count_Good.Condition",
+                        "For Major Repairs (Building)" = "Building.Count_Needs.Major.Repair",
+                        "For Minor Repairs (Building)" = "Building.Count_Needs.Minor.Repair"),
+  `Classroom Status` = c("Condemned (Room)" = "Number.of.Rooms_Condemned...For.Demolition",
+                         "For Condemnation (Room)" = "Number.of.Rooms_For.Condemnation",
+                         "For Completion (Room)" = "Number.of.Rooms_For.Completion",
+                         "On-going Construction (Room)" = "Number.of.Rooms_On.going.Construction",
+                         "Good Condition (Room)" = "Number.of.Rooms_Good.Condition",
+                         "For Major Repairs (Room)" = "Number.of.Rooms_Needs.Major.Repair",
+                         "For Minor Repairs (Room)" = "Number.of.Rooms_Needs.Minor.Repair")
+  
+)
+
+program_metric_choices <- list(
+  "ALS/CLC" = c(
+    "ALS/CLC (2024)" = "ALS.CLC_2024_Allocation"
+  ),
+  "Electrification" = c(
+    "Electrification (2017)" = "ELECTRIFICATION.2017",
+    "Electrification (2018)" = "ELECTRIFICATION.2018",
+    "Electrification (2019)" = "ELECTRIFICATION.2019",
+    "Electrification (2023)" = "ELECTRIFICATION.2023",
+    "Electrification (2024)" = "ELECTRIFICATION.2024"
+  ),
+  "Gabaldon" = c(
+    "Gabaldon (2020)" = "GABALDON.2020",
+    "Gabaldon (2021)" = "GABALDON.2021",
+    "Gabaldon (2022)" = "GABALDON.2022",
+    "Gabaldon (2023)" = "GABALDON.2023",
+    "Gabaldon (2024)" = "GABALDON.2024"
+  ),
+  "LibHub" = c(
+    "LibHub (2024)" = "LibHub.2024"
+  ),
+  "LMS" = c(
+    "LMS (2020)" = "LMS.2020",
+    "LMS (2021)" = "LMS.2021",
+    "LMS (2022)" = "LMS.2022",
+    "LMS (2023)" = "LMS.2023",
+    "LMS (2024)" = "LMS.2024"
+  ),
+  "NC" = c(
+    "NC (2014)" = "NC.2014",
+    "NC (2015)" = "NC.2015",
+    "NC (2016)" = "NC.2016",
+    "NC (2017)" = "NC.2017",
+    "NC (2018)" = "NC.2018",
+    "NC (2019)" = "NC.2019",
+    "NC (2020)" = "NC.2020",
+    "NC (2021)" = "NC.2021",
+    "NC (2023)" = "NC.2023",
+    "NC (2024)" = "NC.2024"
+  ),
+  "QRF" = c(
+    "QRF (2019)" = "QRF.2019",
+    "QRF (2020)" = "QRF.2020",
+    "QRF (2021)" = "QRF.2021",
+    "QRF (2022)" = "QRF.2022.REPLENISHMENT",
+    "QRF (2023)" = "QRF.2023",
+    "QRF (2024)" = "QRF.2024"
+  ),
+  "Repair" = c(
+    "Repair (2020)" = "REPAIR.2020",
+    "Repair (2021)" = "REPAIR.2021",
+    "Repair (2022)" = "REPAIR.2022",
+    "Repair (2023)" = "REPAIR.2023",
+    "Repair (2024)" = "REPAIR.2024"
+  ),
+  "School Health Facilities" = c(
+    "Health (2022)" = "SCHOOL.HEALTH.FACILITIES.2022",
+    "Health (2024)" = "SCHOOL.HEALTH.FACILITIES.2024"
+  ),
+  "SPED/ILRC" = c(
+    "SPED (2024)" = "SPED.ILRC.2024"
+  )
+)
+
 # Combine and unlist to create a flat, named vector for lookups
-metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices))
+metric_choices <- unlist(c(hr_metric_choices, infra_metric_choices, condition_metric_choices, program_metric_choices))
 
 # --- *** MODIFIED (Change 1 of 3): Added "clean name" lookup vector *** ---
 # This list combines all inner vectors, preserving their original, clean names
@@ -73,7 +163,19 @@ clean_metric_choices <- c(
   hr_metric_choices$`Specialization Data`,
   infra_metric_choices$Classroom,
   infra_metric_choices$Facilities,
-  infra_metric_choices$Resources
+  infra_metric_choices$Resources,
+  condition_metric_choices$`Building Status`,
+  condition_metric_choices$`Classroom Status`,
+  program_metric_choices$`ALS/CLC`,
+  program_metric_choices$Electrification,
+  program_metric_choices$Gabaldon,
+  program_metric_choices$LibHub,
+  program_metric_choices$LMS,
+  program_metric_choices$NC,
+  program_metric_choices$QRF,
+  program_metric_choices$Repair,
+  program_metric_choices$`School Health Facilities`,
+  program_metric_choices$`SPED/ILRC`
 )
 
 
@@ -81,7 +183,9 @@ clean_metric_choices <- c(
 all_selected_metrics <- reactive({
   hr_metrics <- input$Combined_HR_Toggles_Build
   infra_metrics <- input$Combined_Infra_Toggles_Build
-  c(hr_metrics, infra_metrics)
+  condition_metrics <- input$Combined_Conditions_Toggles_Build
+  program_metrics <- input$Infra_Programs_Picker_Build # <-- RE-ADDED
+  c(hr_metrics, infra_metrics, condition_metrics, program_metrics) # <-- RE-ADDED
 })
 
 
@@ -92,6 +196,11 @@ teacher_metrics <- c("TotalTeachers", "Total.Shortage", "Total.Excess")
 school_metrics <- c("Total.Schools","School.Size.Typology", "Modified.COC") 
 classroom_metrics <- c("Instructional.Rooms.2023.2024", "Classroom.Requirement", "Shifting")
 enrolment_metrics <- c("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
+buildingcondition_metrics <- c("Building.Count_Condemned...For.Demolition","Building.Count_For.Completion",             
+                               "Building.Count_For.Condemnation","Building.Count_Good.Condition",             
+                               "Building.Count_Needs.Major.Repair","Building.Count_Needs.Minor.Repair",         
+                               "Building.Count_On.going.Construction")
+roomcondition_metrics <- c("Number.of.Rooms_Condemned...For.Demolition","Number.of.Rooms_For.Completion","Number.of.Rooms_For.Condemnation","Number.of.Rooms_Good.Condition","Number.of.Rooms_Needs.Major.Repair","Number.of.Rooms_Needs.Minor.Repair","Number.of.Rooms_On.going.Construction")
 
 # --- Observer 1: Sync Pickers -> Toggles ---
 
@@ -161,6 +270,48 @@ observeEvent(input$preset_enrolment, {
   shinyWidgets::updatePickerInput(
     session, 
     "Combined_HR_Toggles_Build", 
+    selected = new_selection
+  )
+}, ignoreInit = TRUE)
+
+# Preset 5: Building Condition Focus Toggle
+observeEvent(input$preset_buildingcondition, {
+  # Isolate the selection from the NEW conditions picker
+  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
+  
+  if (input$preset_buildingcondition == TRUE) {
+    # Add the building condition metrics
+    new_selection <- union(current_selection, buildingcondition_metrics) 
+  } else {
+    # Remove the building condition metrics
+    new_selection <- setdiff(current_selection, buildingcondition_metrics)
+  }
+  
+  # Update the NEW conditions picker
+  shinyWidgets::updatePickerInput(
+    session, 
+    "Combined_Conditions_Toggles_Build", 
+    selected = new_selection
+  )
+}, ignoreInit = TRUE)
+
+# Preset 6: Room Condition Focus Toggle
+observeEvent(input$preset_roomcondition, {
+  # Isolate the selection from the NEW conditions picker
+  current_selection <- isolate(input$Combined_Conditions_Toggles_Build) 
+  
+  if (input$preset_roomcondition == TRUE) {
+    # Add the room condition metrics
+    new_selection <- union(current_selection, roomcondition_metrics) 
+  } else {
+    # Remove the room condition metrics
+    new_selection <- setdiff(current_selection, roomcondition_metrics)
+  }
+  
+  # Update the NEW conditions picker
+  shinyWidgets::updatePickerInput(
+    session, 
+    "Combined_Conditions_Toggles_Build", 
     selected = new_selection
   )
 }, ignoreInit = TRUE)
@@ -356,6 +507,7 @@ output$back_button_ui <- renderUI({
   button_label <- ""  
   show_button <- FALSE 
   
+  # --- UPDATED: Added new filters to precedence list ---
   if (!is.null(state$clustering_filter)) {
     label_text <- stringr::str_trunc(state$clustering_filter, 20) 
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
@@ -370,6 +522,15 @@ output$back_button_ui <- renderUI({
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
   } else if (!is.null(state$coc_filter)) {
     label_text <- stringr::str_trunc(state$coc_filter, 20)
+    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
+  } else if (!is.null(state$water_filter)) { # --- NEW ---
+    label_text <- stringr::str_trunc(state$water_filter, 20)
+    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
+  } else if (!is.null(state$electricity_filter)) { # --- NEW ---
+    label_text <- stringr::str_trunc(state$electricity_filter, 20)
+    button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
+  } else if (!is.null(state$ownership_filter)) { # --- NEW ---
+    label_text <- stringr::str_trunc(state$ownership_filter, 20)
     button_label <- paste("Undo Filter:", label_text); show_button <- TRUE
   } else if (state$level == "District") {
     button_label <- "Undo Drilldown"; show_button <- TRUE
@@ -391,6 +552,7 @@ observeEvent(input$back_button, {
   state <- isolate(global_drill_state()) 
   new_state <- state 
   
+  # --- UPDATED: Added new filters to precedence list ---
   if (!is.null(state$clustering_filter)) {
     new_state$clustering_filter <- NULL
   } else if (!is.null(state$outlier_filter)) {
@@ -401,8 +563,13 @@ observeEvent(input$back_button, {
     new_state$typology_filter <- NULL 
   } else if (!is.null(state$coc_filter)) {
     new_state$coc_filter <- NULL      
-  } 
-  else if (state$level == "District") {
+  } else if (!is.null(state$water_filter)) { # --- NEW ---
+    new_state$water_filter <- NULL
+  } else if (!is.null(state$electricity_filter)) { # --- NEW ---
+    new_state$electricity_filter <- NULL
+  } else if (!is.null(state$ownership_filter)) { # --- NEW ---
+    new_state$ownership_filter <- NULL
+  } else if (state$level == "District") {
     new_state$level <- "Legislative.District"; new_state$legislative_district <- NULL 
   } else if (state$level == "Legislative.District") {
     new_state$level <- "Municipality"; new_state$municipality <- NULL
@@ -417,7 +584,7 @@ observeEvent(input$back_button, {
 })
 
 
-# --- *** UPDATED: DYNAMIC OBSERVER MANAGER *** ---
+# --- *** UPDATED: DYNAMIC OBSERVER MANAGER (REVERTED) *** ---
 observe({
   selected_metrics <- all_selected_metrics() 
   
@@ -459,7 +626,29 @@ observe({
       global_drill_state(state); global_trigger(global_trigger() + 1)
     }, ignoreNULL = TRUE, ignoreInit = TRUE)
     
+    # --- *** NEW OBSERVERS ADDED *** ---
+    observeEvent(event_data("plotly_click", source = "ownership_click"), {
+      d <- event_data("plotly_click", source = "ownership_click"); if (is.null(d$y)) return() 
+      state <- isolate(global_drill_state()); state$ownership_filter <- d$y
+      global_drill_state(state); global_trigger(global_trigger() + 1)
+    }, ignoreNULL = TRUE, ignoreInit = TRUE)
+    
+    observeEvent(event_data("plotly_click", source = "electricity_click"), {
+      d <- event_data("plotly_click", source = "electricity_click"); if (is.null(d$y)) return() 
+      state <- isolate(global_drill_state()); state$electricity_filter <- d$y
+      global_drill_state(state); global_trigger(global_trigger() + 1)
+    }, ignoreNULL = TRUE, ignoreInit = TRUE)
+    
+    observeEvent(event_data("plotly_click", source = "water_click"), {
+      d <- event_data("plotly_click", source = "water_click"); if (is.null(d$y)) return() 
+      state <- isolate(global_drill_state()); state$water_filter <- d$y
+      global_drill_state(state); global_trigger(global_trigger() + 1)
+    }, ignoreNULL = TRUE, ignoreInit = TRUE)
+    # --- *** END NEW OBSERVERS *** ---
+    
+    
     # --- Geographic Drilldown Observer (Unchanged) ---
+    # This now applies to ALL metrics, including programs
     observeEvent(event_data("plotly_click", source = current_metric_source), {
       state <- isolate(global_drill_state()); if (state$level == "District") return() 
       d <- event_data("plotly_click", source = current_metric_source); if (is.null(d$y)) return()
@@ -498,11 +687,15 @@ filtered_data <- reactive({
     req(state$region, state$division, state$municipality, state$legislative_district); temp_data <- temp_data %>% filter(Region == state$region, Division == state$division, Municipality == state$municipality, Legislative.District == state$legislative_district)
   }
   
+  # --- UPDATED: Added new filters ---
   if (!is.null(state$coc_filter)) { temp_data <- temp_data %>% filter(Modified.COC == state$coc_filter) }
   if (!is.null(state$typology_filter)) { temp_data <- temp_data %>% filter(School.Size.Typology == state$typology_filter) }
   if (!is.null(state$shifting_filter)) { temp_data <- temp_data %>% filter(Shifting == state$shifting_filter) }
   if (!is.null(state$outlier_filter)) { temp_data <- temp_data %>% filter(Outlier.Status == state$outlier_filter) }
   if (!is.null(state$clustering_filter)) { temp_data <- temp_data %>% filter(Clustering.Status == state$clustering_filter) }
+  if (!is.null(state$ownership_filter)) { temp_data <- temp_data %>% filter(OwnershipType == state$ownership_filter) } # --- NEW ---
+  if (!is.null(state$electricity_filter)) { temp_data <- temp_data %>% filter(ElectricitySource == state$electricity_filter) } # --- NEW ---
+  if (!is.null(state$water_filter)) { temp_data <- temp_data %>% filter(WaterSource == state$water_filter) } # --- NEW ---
   
   temp_data
 })
@@ -511,7 +704,12 @@ filtered_data <- reactive({
 summarized_data_long <- reactive({
   
   selected_metrics_list <- all_selected_metrics()
-  req(length(selected_metrics_list) > 0) 
+  # --- MODIFICATION: Check for empty selection ---
+  if (length(selected_metrics_list) == 0) {
+    # Return an empty tibble with the correct structure
+    return(tibble(Category = character(), Metric = character(), Value = numeric()))
+  }
+  # --- END MODIFICATION ---
   
   state <- global_drill_state() 
   group_by_col <- state$level  
@@ -528,8 +726,9 @@ summarized_data_long <- reactive({
     summaries_list[["school_count"]] <- school_count_summary
   }
   
+  # --- UPDATED: Added new metrics to categorical list ---
   categorical_metrics <- c("Modified.COC", "School.Size.Typology", "Total.Schools","Shifting", "Completion",
-                           "Outlier.Status", "Clustering.Status")
+                           "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")
   
   numeric_metrics_to_process <- setdiff(metrics_to_process, categorical_metrics)
   existing_metrics <- intersect(numeric_metrics_to_process, names(data_in))
@@ -559,7 +758,7 @@ summarized_data_long <- reactive({
 })
 
 
-# --- Dynamic UI Dashboard Grid (UPDATED) ---
+# --- Dynamic UI Dashboard Grid (REVERTED) ---
 output$dashboard_grid <- renderUI({
   
   selected_metrics <- all_selected_metrics() 
@@ -579,6 +778,9 @@ output$dashboard_grid <- renderUI({
       )
     )
   }
+  
+  # --- *** Pre-filter data for plots *** ---
+  metric_plot_data <- summarized_data_long()
   
   # --- 1. Create Plotly Renders ---
   walk(selected_metrics, ~{
@@ -608,19 +810,23 @@ output$dashboard_grid <- renderUI({
     if (!is.null(state$shifting_filter)) { filter_parts <- c(filter_parts, state$shifting_filter) }
     if (!is.null(state$outlier_filter)) { filter_parts <- c(filter_parts, state$outlier_filter) }
     if (!is.null(state$clustering_filter)) { filter_parts <- c(filter_parts, state$clustering_filter) }
+    if (!is.null(state$ownership_filter)) { filter_parts <- c(filter_parts, state$ownership_filter) } # --- NEW ---
+    if (!is.null(state$electricity_filter)) { filter_parts <- c(filter_parts, state$electricity_filter) } # --- NEW ---
+    if (!is.null(state$water_filter)) { filter_parts <- c(filter_parts, state$water_filter) } # --- NEW ---
     
     if (length(filter_parts) > 0) {
       plot_title <- paste0(plot_title, " (Filtered by: ", paste(filter_parts, collapse = ", "), ")")
     }
     
     # --- UPDATED IF CONDITION ---
-    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", "Outlier.Status", "Clustering.Status")) {
+    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", 
+                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")) {
       
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
           bar_data <- tibble() 
           if (current_metric == "Total.Schools") {
-            bar_data <- summarized_data_long() %>%
+            bar_data <- metric_plot_data %>%
               filter(Metric == "Total.Schools", !is.na(Category)) %>%
               rename(Count = Value) 
           } else {
@@ -644,10 +850,13 @@ output$dashboard_grid <- renderUI({
             current_metric == "Shifting" ~ "shifting_bar_click",
             current_metric == "Outlier.Status" ~ "outlier_click", 
             current_metric == "Clustering.Status" ~ "clustering_click",
+            current_metric == "OwnershipType" ~ "ownership_click", # --- NEW ---
+            current_metric == "ElectricitySource" ~ "electricity_click", # --- NEW ---
+            current_metric == "WaterSource" ~ "water_click", # --- NEW ---
             TRUE ~ paste0("plot_source_", current_metric) 
           )
           
-          click_source_name <- if (plot_source %in% c("coc_pie_click", "typology_bar_click", "shifting_bar_click", "outlier_click", "clustering_click")) {
+          click_source_name <- if (plot_source %in% c("coc_pie_click", "typology_bar_click", "shifting_bar_click", "outlier_click", "clustering_click", "ownership_click", "electricity_click", "water_click")) {
             plot_source
           } else {
             paste0("plot_source_", current_metric) 
@@ -674,9 +883,10 @@ output$dashboard_grid <- renderUI({
       
     } else {
       # --- RENDER DEFAULT DRILLDOWN BAR CHART (Unchanged) ---
+      # --- *** PROGRAM COLUMNS WILL NOW BE RENDERED HERE *** ---
       output[[paste0("plot_", current_metric)]] <- renderPlotly({
         tryCatch({
-          plot_data <- summarized_data_long() %>%
+          plot_data <- metric_plot_data %>%
             filter(Metric == current_metric, !is.na(Category))
           
           if (nrow(plot_data) == 0 || all(is.na(plot_data$Value))) {
@@ -714,11 +924,12 @@ output$dashboard_grid <- renderUI({
     summary_card_content <- NULL
     
     # --- UPDATED IF CONDITION ---
-    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", "Outlier.Status", "Clustering.Status")) {
+    if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", 
+                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")) {
       
       total_count <- tryCatch({
         if (current_metric == "Total.Schools") {
-          summarized_data_long() %>% filter(Metric == "Total.Schools") %>% pull(Value) %>% sum(na.rm = TRUE)
+          metric_plot_data %>% filter(Metric == "Total.Schools") %>% pull(Value) %>% sum(na.rm = TRUE)
         } else {
           nrow(filtered_data()) 
         }
@@ -739,9 +950,9 @@ output$dashboard_grid <- renderUI({
       )
       
     } else {
-      
+      # --- *** PROGRAM COLUMNS WILL NOW BE HANDLED HERE *** ---
       total_val <- tryCatch({
-        summarized_data_long() %>% filter(Metric == current_metric) %>% pull(Value) %>% sum(na.rm = TRUE)
+        metric_plot_data %>% filter(Metric == current_metric) %>% pull(Value) %>% sum(na.rm = TRUE)
       }, error = function(e) { 0 }) 
       
       summary_card_content <- card(
@@ -817,7 +1028,7 @@ output$build_dashboard_school_details_ui <- renderUI({
     
     card(full_screen = TRUE,
          card_header(strong("Classroom Data")),
-         tableOutput("schooldetails_build3")),
+         tableOutput("schooldCSS_build3")),
     
     card(full_screen = TRUE,
          card_header(div(strong("Specialization Data"),
