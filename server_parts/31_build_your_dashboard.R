@@ -28,6 +28,13 @@ drilldown_observers <- reactiveVal(list())
 # --- *** NEW: Reactive to store SchoolID from map or table click *** ---
 reactive_selected_school_id <- reactiveVal(NULL)
 
+# --- NEW: Output to power conditionalPanel ---
+# This exposes the current drill level to the UI for conditionalPanel
+output$current_drill_level <- reactive({
+  global_drill_state()$level
+})
+outputOptions(output, "current_drill_level", suspendWhenHidden = FALSE)
+
 
 # --- *** NEW: Define Metric Choices for Plot Titles *** ---
 # This must match the 'choices' in your 10_stride2_UI.R pickers
@@ -425,31 +432,25 @@ output$school_map <- leaflet::renderLeaflet({
     )
 })
 
-# --- data_in_bounds (Unchanged) ---
-data_in_bounds <- reactive({
-  data_to_filter <- filtered_data()
-  req(nrow(data_to_filter) > 0)
-  req("Latitude" %in% names(data_to_filter), "Longitude" %in% names(data_to_filter))
-  
-  bounds <- input$school_map_bounds
-  if (is.null(bounds)) {
-    return(data_to_filter)
-  }
-  
-  data_to_filter %>%
-    filter(
-      Latitude >= bounds$south & Latitude <= bounds$north &
-        Longitude >= bounds$west & Longitude <= bounds$east
-    )
-})
-
 # --- school_table (Unchanged) ---
+# --- school_table (UPDATED) ---
 output$school_table <- DT::renderDataTable({
   req(global_trigger() > 0)
-  data_for_table <- data_in_bounds()
+  
+  # --- CHANGE: Use filtered_data() directly ---
+  data_for_table <- filtered_data() 
+  
   cols_to_show <- c("SchoolID", "School.Name", "Division", "Region", "TotalTeachers", "Modified.COC")
   cols_to_show <- intersect(cols_to_show, names(data_for_table))
-  req(length(cols_to_show) > 0)
+  
+  # --- ROBUSTNESS: Handle empty data ---
+  if (nrow(data_for_table) == 0 || length(cols_to_show) == 0) {
+    return(DT::datatable(
+      data.frame(Message = "No data available for the current selection."),
+      rownames = FALSE,
+      options = list(paging = FALSE, searching = FALSE, info = FALSE)
+    ))
+  }
   
   DT::datatable(
     data_for_table[, cols_to_show],
@@ -459,7 +460,7 @@ output$school_table <- DT::renderDataTable({
       pageLength = 10,
       scrollY = "400px", 
       scrollCollapse = TRUE,
-      paging = FALSE 
+      paging = TRUE # Changed to TRUE for better handling of long lists
     )
   )
 })
@@ -467,25 +468,48 @@ output$school_table <- DT::renderDataTable({
 # --- *** NEW: Observers for Map/Table Clicks *** ---
 
 # --- Observer for Table Clicks (UPDATED) ---
+# --- Observer for Table Clicks (UPDATED for robustness) ---
+# --- Observer for Table Clicks (NEW ROBUST VERSION + DEBUGGING) ---
+# --- Observer for Table Clicks (ROBUST FIX FOR DATA TYPES) ---
+# --- Observer for Table Clicks (Using flyTo for robustness) ---
 observeEvent(input$school_table_rows_selected, {
+  
   selected_row_index <- input$school_table_rows_selected
   req(selected_row_index)
   
-  table_data <- data_in_bounds()
+  # Get the data that was used to render the table
+  table_data <- filtered_data() 
+  
+  # Robustness Check 1: Index is valid
+  if (selected_row_index > nrow(table_data)) {
+    showNotification("Error: Table index is out of bounds.", type = "error")
+    return()
+  }
+  
   selected_row_data <- table_data[selected_row_index, ]
   
   # Set the reactive ID for school details
   reactive_selected_school_id(selected_row_data$SchoolID)
   
-  req("Latitude" %in% names(selected_row_data), "Longitude" %in% names(selected_row_data))
+  # --- Data Type Conversion (Best Practice) ---
+  current_lat <- as.numeric(selected_row_data$Latitude)
+  current_lng <- as.numeric(selected_row_data$Longitude)
   
-  # Zoom the map
+  # Robustness Check 2: Coordinates are valid
+  if (is.na(current_lng) || is.na(current_lat)) {
+    showNotification("Selected school has no map coordinates.", type = "warning")
+    return()
+  }
+  
+  # --- *** THE CHANGE: Use flyTo instead of setView *** ---
   leafletProxy("school_map", session) %>%
-    setView(
-      lng = selected_row_data$Longitude,
-      lat = selected_row_data$Latitude,
-      zoom = 15 
+    flyTo(
+      lng = current_lng,
+      lat = current_lat,
+      zoom = 15,
+      options = leafletOptions(duration = 0.5) # Fly animation in 0.5 sec
     )
+  
 }, ignoreNULL = TRUE, ignoreInit = TRUE)
 
 # --- Observer for Map Marker Clicks ---
@@ -1230,7 +1254,7 @@ output$build_dashboard_school_details_ui <- renderUI({
     
     card(full_screen = TRUE,
          card_header(strong("Classroom Data")),
-         tableOutput("schooldCSS_build3")),
+         tableOutput("schooldetails_build3")),
     
     card(full_screen = TRUE,
          card_header(div(strong("Specialization Data"),
@@ -1292,7 +1316,7 @@ output$schooldetails_build3 <- renderTable({
       data$Classroom.Requirement, data$Est.CS,
       data$Buidable_space, data$Major.Repair.2023.2024,
       data$SBPI, data$Shifting, data$OwnershipType,
-      data$ElectricitySource, data$WaterSource, data$Total.Seats.2True23.2024,
+      data$ElectricitySource, data$WaterSource, data$Total.Seats.2023.2024,
       data$Total.Seats.Shortage.2023.2024
     ))
   )
