@@ -1481,81 +1481,90 @@ output$STRIDE2 <- renderUI({
       icon = bs_icon("search"),
       layout_sidebar(
         sidebar = sidebar(
-          textInput("text","Enter School Name"),
           
-          # --- ADDED: A place to show the warning text ---
-          # This UI element is updated by your server logic
-          uiOutput("text_warning_ui"), 
+          # 1. The switch to toggle modes
+          shinyWidgets::switchInput(
+            inputId = "search_mode",
+            label = "Advanced Search",
+            value = FALSE, # Start in "Simple" mode
+            onLabel = "On",
+            offLabel = "Off",
+            size = "small"
+          ),
           
+          # --- NEW: Panel for SIMPLE Search ---
+          # This panel only shows if input.search_mode is 'false'
+          conditionalPanel(
+            condition = "input.search_mode == false",
+            h5("Simple Search"),
+            textInput("text_simple", "School Name:", 
+                      placeholder = "Enter school name (or part of it)")
+          ),
+          
+          # --- MODIFIED: Panel for ADVANCED Search ---
+          # This panel only shows if input.search_mode is 'true'
+          conditionalPanel(
+            condition = "input.search_mode == true",
+            
+            h5("Advanced Search"),
+            # This is the NEW, independent text input
+            textInput("text_advanced", "School Name (Optional):", 
+                      placeholder = "Filter by name..."),
+            
+            hr(),
+            h5("Advanced Filters"),
+            
+            # 1. Region Filter
+            pickerInput(
+              inputId = "qss_region",
+              label = "Filter by Region:",
+              choices = sort(unique(uni$Region)), 
+              selected = NULL,
+              multiple = TRUE,
+              options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Regions")
+            ),
+            
+            # 2. Division Filter
+            pickerInput(
+              inputId = "qss_division",
+              label = "Filter by Division:",
+              choices = sort(unique(uni$Division)), 
+              selected = NULL,
+              multiple = TRUE,
+              options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Divisions")
+            ),
+            
+            # 3. Legislative District Filter
+            pickerInput(
+              inputId = "qss_legdist",
+              label = "Filter by Legislative District:",
+              choices = sort(unique(uni$Legislative.District)), 
+              selected = NULL,
+              multiple = TRUE,
+              options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Districts")
+            ),
+            
+            # 4. Municipality Filter
+            pickerInput(
+              inputId = "qss_municipality",
+              label = "Filter by Municipality:",
+              choices = sort(unique(uni$Municipality)), 
+              selected = NULL,
+              multiple = TRUE,
+              options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Municipalities")
+            )
+          ), # --- End of conditionalPanel (Advanced) ---
+          
+          # 4. The "Run" button (always visible)
           input_task_button("TextRun", 
                             icon_busy = fontawesome::fa_i("refresh", class = "fa-spin", "aria-hidden" = "true"), 
                             strong("Show Selection"), 
-                            class = "btn-warning"),
+                            class = "btn-warning")
           
-          # --- UPDATED: Advanced Search Section ---
-          hr(),
-          h5("Advanced Search (Optional)"),
-          
-          # 1. Region Filter (Unchanged)
-          pickerInput(
-            inputId = "qss_region",
-            label = "Filter by Region:",
-            choices = sort(unique(uni$Region)), # Assumes 'uni' is available
-            selected = NULL,
-            multiple = TRUE,
-            options = pickerOptions(
-              actionsBox = TRUE,
-              liveSearch = TRUE,
-              title = "All Regions"
-            )
-          ),
-          
-          # 2. Division Filter (NOW A FULL pickerInput)
-          # We populate it with ALL divisions initially
-          pickerInput(
-            inputId = "qss_division",
-            label = "Filter by Division:",
-            choices = sort(unique(uni$Division)), # Initial choices
-            selected = NULL,
-            multiple = TRUE,
-            options = pickerOptions(
-              actionsBox = TRUE,
-              liveSearch = TRUE,
-              title = "All Divisions" # Title changed
-            )
-          ),
-          
-          # 3. Legislative District Filter (NOW A FULL pickerInput)
-          pickerInput(
-            inputId = "qss_legdist",
-            label = "Filter by Legislative District:",
-            choices = sort(unique(uni$Legislative.District)), # Initial choices
-            selected = NULL,
-            multiple = TRUE,
-            options = pickerOptions(
-              actionsBox = TRUE,
-              liveSearch = TRUE,
-              title = "All Districts" # Title changed
-            )
-          ),
-          
-          # 4. Municipality Filter (NOW A FULL pickerInput)
-          pickerInput(
-            inputId = "qss_municipality",
-            label = "Filter by Municipality:",
-            choices = sort(unique(uni$Municipality)), # Initial choices
-            selected = NULL,
-            multiple = TRUE,
-            options = pickerOptions(
-              actionsBox = TRUE,
-              liveSearch = TRUE,
-              title = "All Municipalities" # Title changed
-            )
-          )
-          # --- END: Advanced Search Section ---
-          
-        ),
-        # --- Main content panel is unchanged ---
+        ), # --- End of sidebar ---
+        
+        # --- *** THIS IS THE CORRECTED SECTION *** ---
+        # --- Main content panel (NOW FILLED IN) ---
         layout_columns(
           card(
             card_header(strong("Search Output")),
@@ -1585,8 +1594,12 @@ output$STRIDE2 <- renderUI({
                                       ))),
                       tableOutput("schooldetails5")),
                  col_widths = c(6,6,6,6))),
-          col_widths = c(6,6,12)))
-    ), # End of Quick Search nav_panel
+          col_widths = c(6,6,12)
+        ) 
+        # --- *** END OF CORRECTED SECTION *** ---
+        
+      ) # End layout_sidebar
+    ), # End nav_panel
     
     nav_panel(
       title = tags$b("Resource Mapping"),
