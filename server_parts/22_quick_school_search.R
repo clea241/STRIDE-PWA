@@ -12,6 +12,28 @@ output$TextMapping <- renderLeaflet({
 
 # --- 2. Update Picker Choices Dynamically ---
 
+# This new observer clears pickers when switching to "Simple Search"
+observeEvent(input$search_mode, {
+  
+  # Wait for the input to exist
+  req(!is.null(input$search_mode)) 
+  
+  if (input$search_mode == FALSE) {
+    # --- Switched TO "Simple" ---
+    # Clear all advanced inputs
+    updateTextInput(session, "text_advanced", value = "")
+    updatePickerInput(session, "qss_region", selected = character(0))
+    updatePickerInput(session, "qss_division", selected = character(0))
+    updatePickerInput(session, "qss_legdist", selected = character(0))
+    updatePickerInput(session, "qss_municipality", selected = character(0))
+    
+  } else {
+    # --- Switched TO "Advanced" ---
+    # Clear the simple input
+    updateTextInput(session, "text_simple", value = "")
+  }
+}, ignoreNULL = TRUE, ignoreInit = TRUE) # ignoreInit is important!
+
 # This creates a 'filtered_data' reactive that changes based on selections
 filtered_data_react <- reactive({
   
@@ -115,16 +137,37 @@ observeEvent(input$qss_legdist, {
 
 # --- 3. Update Button State & Warning Message ---
 observe({
-  txt <- trimws(input$text)
   
-  # Check if any advanced search filters are filled
-  adv_search_filled <- !is.null(input$qss_region) || 
+  req(!is.null(input$search_mode)) 
+  is_advanced_mode <- isTRUE(input$search_mode)
+  
+  # Check if any advanced search *pickers* are filled
+  adv_pickers_filled <- !is.null(input$qss_region) || 
     !is.null(input$qss_division) || 
     !is.null(input$qss_legdist) || 
     !is.null(input$qss_municipality)
   
-  # Enable button if EITHER text search OR advanced search is used
-  can_run <- (txt != "" || adv_search_filled)
+  can_run <- FALSE
+  warning_msg <- ""
+  
+  if (is_advanced_mode) {
+    # --- Advanced Mode Logic ---
+    txt <- trimws(input$text_advanced) # Read from advanced input
+    can_run <- (txt != "" || adv_pickers_filled)
+    if (!can_run) {
+      warning_msg <- "⚠ Please enter a school name or use advanced search filters."
+    }
+    
+  } else {
+    # --- Simple Mode Logic ---
+    txt <- trimws(input$text_simple) # Read from simple input
+    can_run <- (txt != "")
+    if (!can_run) {
+      warning_msg <- "⚠ Please enter a school name."
+    }
+  }
+  
+  # Enable/disable button
   shinyjs::toggleState("TextRun", condition = can_run)
   
   # Show or hide warning message
@@ -132,7 +175,7 @@ observe({
     if (!can_run) {
       tags$small(
         style = "color: red; font-style: italic;",
-        "⚠ Please enter a school name or use advanced search."
+        warning_msg
       )
     } else {
       "" # Clear warning
@@ -142,78 +185,86 @@ observe({
 
 
 # --- 4. Main Data Filtering (When "Show Selection" is clicked) ---
+# --- MODIFIED: Changed from eventReactive to the "Snapshot" pattern ---
 
-# We use eventReactive to create a "snapshot" of the filtered data
-# This reactive only runs when input$TextRun is clicked
-mainreact1 <- eventReactive(input$TextRun, {
+# 4a. Create a reactiveVal to store our data "snapshot"
+# This val will ONLY be updated when input$TextRun is clicked.
+data_snapshot <- reactiveVal(NULL)
+
+# 4b. This observeEvent now does the filtering and PUSHES
+#    the result into our data_snapshot()
+observeEvent(input$TextRun, {
   
-  Text <- trimws(input$text)
-  sel_region <- input$qss_region
-  sel_division <- input$qss_division
-  sel_legdist <- input$qss_legdist
-  sel_municipality <- input$qss_municipality
+  is_advanced <- isTRUE(input$search_mode)
   
-  # Start with the full dataset
+  # --- START: Robust Check ---
+  Text_pattern <- "" 
+  
+  if (is_advanced) {
+    if (!is.null(input$text_advanced) && !is.na(input$text_advanced) && input$text_advanced != "") {
+      Text_pattern <- trimws(input$text_advanced)
+    }
+  } else {
+    if (!is.null(input$text_simple) && !is.na(input$text_simple) && input$text_simple != "") {
+      Text_pattern <- trimws(input$text_simple)
+    }
+  }
+  # --- END: Robust Check ---
+  
   filtered_data <- uni
   
-  # 1. Conditionally filter by School Name
-  if (Text != "") {
+  if (Text_pattern != "") {
     filtered_data <- filtered_data %>%
-      filter(grepl(Text, as.character(School.Name), ignore.case = TRUE))
+      filter(grepl(Text_pattern, as.character(School.Name), ignore.case = TRUE))
   }
   
-  # 2. Conditionally filter by Region
-  if (!is.null(sel_region)) {
-    filtered_data <- filtered_data %>%
-      filter(Region %in% sel_region)
-  }
-  
-  # 3. Conditionally filter by Division
-  if (!is.null(sel_division)) {
-    filtered_data <- filtered_data %>%
-      filter(Division %in% sel_division)
-  }
-  
-  # 4. Conditionally filter by Legislative District
-  if (!is.null(sel_legdist)) {
-    filtered_data <- filtered_data %>%
-      filter(Legislative.District %in% sel_legdist)
-  }
-  
-  # 5. Conditionally filter by Municipality
-  if (!is.null(sel_municipality)) {
-    filtered_data <- filtered_data %>%
-      filter(Municipality %in% sel_municipality)
-  }
+  if (is_advanced) {
+    
+    sel_region <- input$qss_region
+    sel_division <- input$qss_division
+    sel_legdist <- input$qss_legdist
+    sel_municipality <- input$qss_municipality
+    
+    if (!is.null(sel_region)) {
+      filtered_data <- filtered_data %>% filter(Region %in% sel_region)
+    }
+    if (!is.null(sel_division)) {
+      filtered_data <- filtered_data %>% filter(Division %in% sel_division)
+    }
+    if (!is.null(sel_legdist)) {
+      filtered_data <- filtered_data %>% filter(Legislative.District %in% sel_legdist)
+    }
+    if (!is.null(sel_municipality)) {
+      filtered_data <- filtered_data %>% filter(Municipality %in% sel_municipality)
+    }
+  } 
   
   # Arrange for a clean final table
-  filtered_data %>% arrange(Region, Division, Municipality, School.Name)
-})
-
-# This reactive filters the main results based on the map's current view
-df1 <- reactive({
-  # Get the data from our eventReactive
-  data <- mainreact1()
+  final_data <- filtered_data %>% arrange(Region, Division, Municipality, School.Name)
   
-  if (is.null(input$TextMapping_bounds)) {
-    data
-  } else {
-    bounds <- input$TextMapping_bounds
-    latRng <- range(bounds$north, bounds$south)
-    lngRng <- range(bounds$east, bounds$west)
-    
-    subset(data,
-           Latitude >= latRng[1] & Latitude <= latRng[2] & 
-             Longitude >= lngRng[1] & Longitude <= lngRng[2])
-  }
-})
+  # --- THIS IS THE KEY ---
+  # Save the final data to our "snapshot"
+  data_snapshot(final_data)
+  
+}, ignoreNULL = TRUE, ignoreInit = TRUE) # This should listen to the button click
 
 
 # --- 5. Update Outputs after "Show Selection" is clicked ---
+# --- MODIFIED: Now observes data_snapshot() AND removed DT render ---
 
-# This observer will trigger when mainreact1() (our data) is updated
+# This observer will trigger when data_snapshot() (our data) is updated
 observe({
-  data <- mainreact1()
+  data <- data_snapshot() # <-- CHANGED
+  
+  # Add a check for the initial NULL state (before any search)
+  if (is.null(data)) {
+    # This clears the map when the app first loads
+    output$text_warning_ui <- renderUI("")
+    leafletProxy("TextMapping") %>%
+      clearMarkers() %>%
+      clearMarkerClusters()
+    return()
+  }
   
   # Handle no matching results
   if (nrow(data) == 0) {
@@ -226,7 +277,6 @@ observe({
     leafletProxy("TextMapping") %>%
       clearMarkers() %>%
       clearMarkerClusters()
-    output$TextTable <- DT::renderDT(NULL)
     return()
   } else {
     # Clear any old warning
@@ -240,11 +290,10 @@ observe({
     "<br>School ID:", data$SchoolID
   ) %>% lapply(htmltools::HTML)
   
- # --- Update leaflet map ---
+  # --- Update leaflet map ---
   leafletProxy("TextMapping") %>%
     clearMarkers() %>%
     clearMarkerClusters() %>%
-    # Fit the map to all the resulting points
     flyToBounds(
       lng1 = min(data$Longitude), lat1 = min(data$Latitude),
       lng2 = max(data$Longitude), lat2 = max(data$Latitude)
@@ -269,14 +318,45 @@ observe({
 })
 
 # --- Render DataTable ---
+# --- MODIFIED: A much more robust way to handle the initial NULL state ---
 output$TextTable <- DT::renderDT(server = TRUE, {
+  
+  # Get the data from our snapshot
+  data_from_snapshot <- data_snapshot()
+  
+  # 1. Check if the snapshot is NULL (on app startup)
+  if (is.null(data_from_snapshot)) {
+    
+    # Create a blank data.frame with the *final* column names
+    data_for_table <- data.frame(
+      Region = character(0),
+      Division = character(0),
+      `Legislative.District` = character(0), # Use backticks for safety
+      Municipality = character(0),
+      School = character(0), # Final column name is "School"
+      check.names = FALSE # Prevents R from changing the '.' in "Legislative.District"
+    )
+    
+  } else {
+    
+    # 2. If we have data, process it
+    data_for_table <- data_from_snapshot %>% 
+      select(
+        "Region", 
+        "Division", 
+        "Legislative.District", 
+        "Municipality", 
+        "School.Name" # Select the original column
+      ) %>%
+      rename("School" = "School.Name") # Rename it
+  }
+  
+  # 3. Pass the prepared data (either blank or full) to datatable()
   datatable(
-    df1() %>% # Use the map-filtered data
-      select("Region", "Division", "Legislative.District", "Municipality", "School.Name") %>%
-      rename("School" = "School.Name"),
+    data_for_table, 
     extension = 'Buttons',
     rownames = FALSE,
-    selection = 'single', # Important: Allow only one row to be selected
+    selection = 'single', 
     options = list(
       scrollX = TRUE,
       pageLength = 10,
@@ -289,15 +369,22 @@ output$TextTable <- DT::renderDT(server = TRUE, {
 
 
 # --- 6. BONUS: Logic for Table Row Click (Your missing piece) ---
+# --- MODIFIED: Changed mainreact1() to data_snapshot() ---
 
 observeEvent(input$TextTable_rows_selected, {
   # Get the index of the selected row
   idx <- input$TextTable_rows_selected
   if (is.null(idx)) return()
   
-  # Get the data for that specific row from the reactive data table
-  # Note: We must use df1() here to make sure the row index matches
-  selected_school <- df1()[idx, ]
+  # --- THIS IS THE FIX ---
+  # We get the data from our STABLE snapshot.
+  # This does NOT re-run any filtering logic. It just reads the data.
+  current_data <- data_snapshot() 
+  
+  # Safety check in case the snapshot is somehow NULL (e.g., race condition)
+  if (is.null(current_data)) return()
+  
+  selected_school <- current_data[idx, ] # <-- CHANGED
   
   # 1. Zoom map to the selected school
   leafletProxy("TextMapping") %>%
