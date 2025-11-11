@@ -907,7 +907,73 @@ output$STRIDE2 <- renderUI({
               title = "School Locator",
               # This UI output will now conditionally render 
               # either the instructions or the map/table layout.
-              uiOutput("data_explorer_content")
+              # --- Data Explorer Content (Hard-coded UI) ---
+              # This tagList replaces the uiOutput("data_explorer_content")
+              tagList(
+                
+                # --- Condition 1: Show instructions when at the top level ---
+                conditionalPanel(
+                  # This JS condition checks if the drill state's 'level' is "Region"
+                  condition = "output.current_drill_level == 'Region'",
+                  
+                  tags$div(
+                    class = "d-flex align-items-center justify-content-center",
+                    style = "height: 60vh; padding: 20px;", 
+                    bslib::card(
+                      style = "max-width: 600px;", 
+                      bslib::card_body(
+                        h4("Data Explorer", class = "card-title"),
+                        p("Please go to the ", tags$b("Dashboard Visuals"), " tab and click on a bar in any graph to select a region."),
+                        p("The map and data table will appear here once you have drilled down into a specific area.")
+                      )
+                    )
+                  )
+                ), # End Conditional Panel 1
+                
+                # --- Condition 2: Show Map/Table when drilled down ---
+                conditionalPanel(
+                  # This JS condition shows the content when the level is *not* "Region"
+                  condition = "output.current_drill_level != 'Region'",
+                  
+                  tagList(
+                    # --- SECTION 1: Map and Table ---
+                    bslib::layout_columns(
+                      col_widths = c(6, 6), 
+                      
+                      # --- Column 1: Datatable ---
+                      bslib::card(
+                        full_screen = TRUE,
+                        bslib::card_header("Filtered Data (Click a row)"),
+                        bslib::card_body(
+                          DT::dataTableOutput("school_table") # This widget now always exists
+                        )
+                      ),
+                      
+                      # --- Column 2: Leaflet Map ---
+                      bslib::card(
+                        full_screen = TRUE,
+                        bslib::card_header("School Map (Click a school)"),
+                        bslib::card_body(
+                          leaflet::leafletOutput("school_map", height = "500px") # This widget now always exists
+                        )
+                      )
+                    ), # End layout_columns
+                    
+                    # --- SECTION 2: School Details ---
+                    bslib::card(
+                      full_screen = TRUE,
+                      card_header(div(strong("School Details"),
+                                      tags$span(em("(Select a school from the table or map above)"),
+                                                style = "font-size: 0.7em; color: grey;"
+                                      ))),
+                      card_body(
+                        uiOutput("build_dashboard_school_details_ui") # This can stay a uiOutput
+                      )
+                    )
+                  ) # End tagList
+                ) # End Conditional Panel 2
+                
+              ) # End Main tagList
             )
           )
         )
