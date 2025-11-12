@@ -377,7 +377,7 @@ output$STRIDE2 <- renderUI({
               inputId = "Combined_Infra_Toggles_Build",
               label = strong("Select Infrastructure Metrics"),
               choices = list(
-                `Classroom` = c("Classrooms" = "Instructional.Rooms.2023.2024", "Classroom Requirement" =  "Classroom.Requirement", "Classroom Shortage" = "Est.CS", "Shifting" = "Shifting", "Buildings" = "Buildings", "Buildable Space" = "Buidable_space", "Major Repairs Needed" = "Major.Repair.2023.2024"),
+                `Classroom` = c("Classrooms" = "Instructional.Rooms.2023.2024", "Classroom Requirement" =  "Classroom.Requirement", "Classroom Shortage" = "Classroom.Shortage", "Shifting" = "Shifting", "Buildings" = "Buildings", "Buildable Space" = "With_Buildable_space", "Major Repairs Needed" = "Major.Repair.2023.2024"),
                 `Facilities` = c("Seats Inventory" = "Total.Total.Seat", "Seats Shortage" = "Total.Seats.Shortage"),
                 `Resources` = c("Ownership Type" = "OwnershipType", "Electricity Source" = "ElectricitySource", "Water Source" = "WaterSource")
               ),
@@ -467,7 +467,75 @@ output$STRIDE2 <- renderUI({
             )
           )
         )
-      ), 
+      ),
+      # --- *** END OF NEW LAYLUT *** ---
+      # --- ADVANCED ANALYTICS PANEL (UPDATED) ---
+      nav_panel(
+        title = "Advanced Analytics",
+        icon = icon("chart-line"),
+        layout_sidebar(
+          sidebar = sidebar(width = 350,
+            title = "Advanced Filters",
+            
+            # 1. Container for dynamic filters
+            # New filters will be added here by the server
+            div(id = "adv_filter_container"),
+            
+            # 2. "Add Filter" Button
+            actionButton("add_adv_filter_btn", "Add Variable Filter", 
+                         icon = icon("plus"), class = "btn-default w-100 mb-3"),
+            
+            hr(),
+            
+            # 3. "Apply" Button
+            actionButton("adv_analytics_run", "Apply Filters & Plot", 
+                         icon = icon("play"), class = "btn-primary w-100")
+          ),
+          
+          # --- Main Panel for Plot and Description ---
+          # --- Main Panel for Plot and Description (UPDATED) ---
+          fluidRow(
+            column(12,
+                   # This card will hold the plot
+                   card(
+                     card_header("Drilldown Plot"),
+                     card_body(
+                       # The Reset and Back buttons
+                       uiOutput("adv_drill_controls_ui"),
+                       
+                       # The plot (with the click ID)
+                       plotOutput("advanced_drilldown_plot", click = "adv_plot_click")
+                     )
+                   )
+            )
+          ),
+          fluidRow(
+            column(6,
+                   # This card will hold the data table
+                   card(
+                     card_header("Filtered Data"),
+                     card_body(
+                       DT::dataTableOutput("advanced_data_table")
+                     ),
+                     # Set a fixed height for better alignment
+                     style = "height: 700px;" 
+                   )
+            ),
+            column(6,
+                   # This card will hold the map
+                   card(
+                     card_header("School Map"),
+                     card_body(
+                       # The map
+                       leafletOutput("advanced_school_map", height = "600px") 
+                     ),
+                     # Set a fixed height for better alignment
+                     style = "height: 700px;" 
+                   )
+            )
+          )
+        ) # End layout_sidebar
+      ), # End nav_panel("Advanced Analytics") 
       nav_panel(
         "Plantilla Positions",
         layout_sidebar(
