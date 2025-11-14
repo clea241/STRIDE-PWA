@@ -18,7 +18,14 @@ output$STRIDE2 <- renderUI({
     tags$div(
       tags$img(src = "Stridelogo1.png", height = "74px", style = "margin-right: -3px; padding-top: 11px; margin-top: -35px;"),
       tags$small("Strategic Inventory for Deployment Efficiency", style = "font-size: 17px; color: #3d3232; display: block; line-height: 1; margin-block: -21px")
-    )
+    ),
+    tags$head(
+      tags$style(HTML("
+      .js-plotly-plot .plotly .modebar {
+         top: -30px !important;
+      }
+    "))
+    ),
   ) # End of navbar_title_ui tags$a
   
   
@@ -573,7 +580,7 @@ output$STRIDE2 <- renderUI({
         "Plantilla Positions",
         layout_sidebar(
           sidebar = sidebar(
-            width = 500,
+            width = 300,
             class = "bg-secondary text-white",
             tags$div(class = "preset-filters", tags$h5("Position Presets"), awesomeCheckboxGroup(inputId = "plantilla_presets", label = "Click to filter positions:", choices = c("Teacher", "Master Teacher", "School Principal", "Head Teacher", "Guidance Coordinator", "Guidance Counselor", "Engineer", "Administrative Officer", "Administrative Assistant"), inline = FALSE, status = "primary")),
             hr(), 
