@@ -257,9 +257,9 @@ output$STRIDE2 <- renderUI({
           tags$h2("Discover STRIDE's Capabilities"),
           div(
             class = "capabilities-row",
-            div(class = "capability-card", id = "showDrilldownModal", div(class = "capability-card-icon", HTML("&#128269;")), tags$h3("Drilldown Function"), tags$p("Start with a high-level overview and seamlessly drill down into detailed data for regions, divisions, and individual schools.")),
-            div(class = "capability-card", id = "showTablesModal", div(class = "capability-card-icon", HTML("&#128187;")), tags$h3("Reactive Data Tables"), tags$p("Interact with your data. Our tables are fully searchable, sortable, and filterable, updating in real-time as you make selections.")),
-            div(class = "capability-card", id = "showMapModal", div(class = "capability-card-icon", HTML("&#127758;")), tags$h3("Geospatial Mapping"), tags$p("Visualize resource distribution and key metrics on an interactive map. Understand your data in its geographic context."))
+            div(class = "capability-card", div(class = "capability-card-icon", HTML("&#128269;")), tags$h3("Drilldown Function"), tags$p("Start with a high-level overview and seamlessly drill down into detailed data for regions, divisions, and individual schools.")),
+            div(class = "capability-card", div(class = "capability-card-icon", HTML("&#128187;")), tags$h3("Reactive Data Tables"), tags$p("Interact with your data. Our tables are fully searchable, sortable, and filterable, updating in real-time as you make selections.")),
+            div(class = "capability-card", div(class = "capability-card-icon", HTML("&#127758;")), tags$h3("Geospatial Mapping"), tags$p("Visualize resource distribution and key metrics on an interactive map. Understand your data in its geographic context."))
           )
         ),
         
@@ -350,21 +350,7 @@ output$STRIDE2 <- renderUI({
             console.error('Carousel script failed: ', e);
           }
           
-          try {
-            document.getElementById('showDrilldownModal').addEventListener('click', function() {
-              Shiny.setInputValue('showDrilldownModal', Math.random());
-            });
-            
-            document.getElementById('showTablesModal').addEventListener('click', function() {
-              Shiny.setInputValue('showTablesModal', Math.random());
-            });
-            
-            document.getElementById('showMapModal').addEventListener('click', function() {
-              Shiny.setInputValue('showMapModal', Math.random());
-            });
-          } catch (e) {
-             console.error('Modal click script failed: ', e);
-          }
+      
         "))
       ) # End tagList
     ), # End Home nav_panel
