@@ -602,7 +602,7 @@ output$advanced_school_map <- renderLeaflet({
   
   leaflet(data = data_for_map_filtered) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>% 
+    addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>% 
     
     # --- Use addAwesomeMarkers ---

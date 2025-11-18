@@ -5,7 +5,7 @@ output$TeacherShortage_Mapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom =7) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>% 
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>% 
     addLegend(position = "bottomright", title = "Legend", pal = p, values = c("Shortage","Excess","Balanced")) %>% 
     addLayersControl(
@@ -28,7 +28,7 @@ output$SHSMapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom = 6) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%  
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(
       position = "topright",
       primaryLengthUnit = "kilometers",
@@ -56,7 +56,7 @@ output$AO2Mapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom = 6) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%  
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>% 
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>% 
     addLegend(
       position = "bottomright",
@@ -84,7 +84,7 @@ output$CLMapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom = 6) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%  
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(
       position = "topright",
       primaryLengthUnit = "kilometers",
@@ -106,7 +106,7 @@ output$FacMapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom =6) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>%
     addLayersControl(
       baseGroups = c("Satellite","Road Map")
@@ -129,7 +129,7 @@ output$CongestMapping <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom = 6) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>%
     addLayersControl(
       baseGroups = c("Satellite", "Road Map")
@@ -186,7 +186,7 @@ output$LMSMapping <- renderLeaflet({
   
   leaflet() %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%
+   addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     setView(lng = 122, lat = 13, zoom = 6) %>%
     addLayersControl(
       baseGroups = c("Satellite", "Road Map"),

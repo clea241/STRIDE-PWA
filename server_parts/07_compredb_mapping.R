@@ -94,7 +94,7 @@ output$mapping_erdb <- renderLeaflet({
   leaflet() %>%
     setView(lng = 122, lat = 13, zoom = 5) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>%
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>%
+    addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright",
                primaryLengthUnit = "kilometers",
                primaryAreaUnit = "sqmeters") %>%
