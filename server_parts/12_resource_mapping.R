@@ -663,7 +663,7 @@ observeEvent(input$Teaching_Deployment_Refresh, {
     leaflet() %>%
       setView(lng = 122, lat = 13, zoom =6) %>%
       addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-      addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>% 
+      addProviderTiles(providers$Esri.WorldStreetMap, group = "Road Map") %>%
       addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>% 
       addLegend(position = "bottomright", title = "Legend", pal = p, values = c("Shortage","Excess","Balanced")) %>% 
       addLayersControl(

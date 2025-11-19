@@ -457,7 +457,7 @@ output$school_map <- leaflet::renderLeaflet({
   
   leaflet(data_to_map) %>%
     addProviderTiles(providers$Esri.WorldImagery, group = "Satellite") %>% 
-    addProviderTiles(providers$CartoDB.Positron, group = "Road Map") %>% 
+    addProviderTiles(providers$OpenStreetMap.Mapnik, group = "Road Map") %>%
     addMeasure(position = "topright", primaryLengthUnit = "kilometers", primaryAreaUnit = "sqmeters") %>%
     fitBounds(
       lng1 = min(data_to_map$Longitude, na.rm = TRUE),
