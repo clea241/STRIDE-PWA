@@ -368,7 +368,11 @@ output$TextTable <- DT::renderDT(server = TRUE, {
 })
 
 
+<<<<<<< HEAD
 # --- 6. LOGIC FOR TABLE ROW CLICK (UPDATED: BOLD, CENTERED, NO HEADERS) ---
+=======
+# --- 6. LOGIC FOR TABLE ROW CLICK (UPDATED: GRANULAR & STYLED) ---
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 observeEvent(input$TextTable_rows_selected, {
   # Get the index of the selected row
@@ -414,6 +418,7 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
   
   # 2. Enrolment Profile
@@ -431,6 +436,32 @@ observeEvent(input$TextTable_rows_selected, {
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
   
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+  
+  # 2. Enrolment Profile
+  # Note: We reuse the output slot 'schooldetails_enrolment' if defined in UI, 
+  # BUT Quick Search UI usually uses 'schooldetails2', '3', etc.
+  # I will map them to the existing UI slots you have in 10_stride2_UI.R for Quick Search,
+  # adding new outputs if necessary.
+  # **CRITICAL:** You need to update 10_stride2_UI.R to match these new table slots if they differ.
+  # For now, I will use standard names and we will update the UI file next.
+  
+  output$qs_enrolment <- renderTable({
+    df <- data.frame(
+      Level = c("Kinder", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+                "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "TOTAL"),
+      Count = as.character(c(
+        data$Kinder, data$G1, data$G2, data$G3, data$G4, data$G5, data$G6,
+        data$G7, data$G8, data$G9, data$G10, data$G11, data$G12, data$TotalEnrolment
+      ))
+    )
+    df <- df[df$Count != "0" & !is.na(df$Count), ]
+    make_bold(df)
+  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+  align = 'c', sanitize.text.function = function(x) x)
+  
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   # 3. Teacher Inventory
   output$qs_teachers <- renderTable({
     df <- data.frame(
@@ -441,7 +472,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 4. Teacher Needs
   output$qs_teacher_needs <- renderTable({
@@ -455,7 +490,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 5. Classroom Inventory
   output$qs_classrooms <- renderTable({
@@ -467,7 +506,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 6. Classroom Needs
   output$qs_classroom_needs <- renderTable({
@@ -482,7 +525,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 7. Utilities
   output$qs_utilities <- renderTable({
@@ -496,7 +543,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 8. NTP
   output$qs_ntp <- renderTable({
@@ -508,7 +559,11 @@ observeEvent(input$TextTable_rows_selected, {
     )
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
   # 9. Specialization
   output$qs_specialization <- renderTable({
@@ -531,6 +586,10 @@ observeEvent(input$TextTable_rows_selected, {
     }
     make_bold(df)
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
   align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
   
 })

@@ -1398,7 +1398,11 @@ output$build_dashboard_school_details_ui <- renderUI({
   )
 })
 
+<<<<<<< HEAD
 # --- 3. RENDER THE GRANULAR DETAIL TABLES (NO HEADERS) ---
+=======
+# --- 3. RENDER THE GRANULAR DETAIL TABLES (CENTERED & BOLD) ---
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # Helper function to bold content
 make_bold <- function(df) {
@@ -1419,7 +1423,11 @@ output$schooldetails_basic <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x) # <-- Added colnames = FALSE
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 2. Enrolment Profile
 output$schooldetails_enrolment <- renderTable({
@@ -1432,10 +1440,17 @@ output$schooldetails_enrolment <- renderTable({
       data$G7, data$G8, data$G9, data$G10, data$G11, data$G12, data$TotalEnrolment
     ))
   )
+<<<<<<< HEAD
   df <- df[df$Count != "0" & !is.na(df$Count), ] 
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+  df <- df[df$Count != "0" & !is.na(df$Count), ] # Filter empty rows
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 3. Teacher Inventory
 output$schooldetails_teachers <- renderTable({
@@ -1448,7 +1463,11 @@ output$schooldetails_teachers <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 4. Teacher Needs (Shortage/Excess)
 output$schooldetails_teacher_needs <- renderTable({
@@ -1463,7 +1482,11 @@ output$schooldetails_teacher_needs <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 5. Classroom Inventory
 output$schooldetails_classrooms <- renderTable({
@@ -1476,7 +1499,11 @@ output$schooldetails_classrooms <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 6. Classroom Needs
 output$schooldetails_classroom_needs <- renderTable({
@@ -1493,7 +1520,11 @@ output$schooldetails_classroom_needs <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 7. Utilities & Facilities
 output$schooldetails_utilities <- renderTable({
@@ -1508,7 +1539,11 @@ output$schooldetails_utilities <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 8. Non-Teaching Personnel
 output$schooldetails_ntp <- renderTable({
@@ -1521,7 +1556,11 @@ output$schooldetails_ntp <- renderTable({
   )
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
 
 # 9. Specialization (JHS/SHS)
 output$schooldetails_specialization <- renderTable({
@@ -1545,4 +1584,8 @@ output$schooldetails_specialization <- renderTable({
   }
   make_bold(df)
 }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+<<<<<<< HEAD
 align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+=======
+align = 'c', sanitize.text.function = function(x) x)
+>>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
