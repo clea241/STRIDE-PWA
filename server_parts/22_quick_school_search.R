@@ -367,229 +367,151 @@ output$TextTable <- DT::renderDT(server = TRUE, {
   )
 })
 
+# --- 3. RENDER THE GRANULAR DETAIL TABLES (NO HEADERS) ---
 
-<<<<<<< HEAD
-# --- 6. LOGIC FOR TABLE ROW CLICK (UPDATED: BOLD, CENTERED, NO HEADERS) ---
-=======
-# --- 6. LOGIC FOR TABLE ROW CLICK (UPDATED: GRANULAR & STYLED) ---
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
+# Helper function to bold content
+make_bold <- function(df) {
+  df[] <- lapply(df, function(x) paste0("<strong>", x, "</strong>"))
+  return(df)
+}
 
-observeEvent(input$TextTable_rows_selected, {
-  # Get the index of the selected row
-  idx <- input$TextTable_rows_selected
-  if (is.null(idx)) return()
+# 1. Basic Information
+output$schooldetails_basic <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("School Name", "School ID", "Region", "Division", "District", "Municipality", 
+               "Barangay", "School Head", "Position", "Curricular Offering", "Typology"),
+    Value = as.character(c(
+      data$School.Name, data$SchoolID, data$Region, data$Division, data$District, data$Municipality,
+      data$Barangay, data$School.Head.Name, data$SH.Position, data$Modified.COC, data$School.Size.Typology
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x) # <-- Added colnames = FALSE
+
+# 2. Enrolment Profile
+output$schooldetails_enrolment <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Level = c("Kinder", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
+              "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "TOTAL"),
+    Count = as.character(c(
+      data$Kinder, data$G1, data$G2, data$G3, data$G4, data$G5, data$G6,
+      data$G7, data$G8, data$G9, data$G10, data$G11, data$G12, data$TotalEnrolment
+    ))
+  )
+  df <- df[df$Count != "0" & !is.na(df$Count), ] 
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 3. Teacher Inventory
+output$schooldetails_teachers <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("Elementary Teachers", "JHS Teachers", "SHS Teachers", "TOTAL Teachers"),
+    Value = as.character(c(
+      data$ES.Teachers, data$JHS.Teachers, data$SHS.Teachers, data$TotalTeachers
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 4. Teacher Needs (Shortage/Excess)
+output$schooldetails_teacher_needs <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("ES Shortage", "JHS Shortage", "SHS Shortage", "TOTAL Shortage",
+               "ES Excess", "JHS Excess", "SHS Excess", "TOTAL Excess"),
+    Value = as.character(c(
+      data$ES.Shortage, data$JHS.Shortage, data$SHS.Shortage, data$Total.Shortage,
+      data$ES.Excess, data$JHS.Excess, data$SHS.Excess, data$Total.Excess
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 5. Classroom Inventory
+output$schooldetails_classrooms <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("Total Buildings", "Total Instructional Rooms"),
+    Value = as.character(c(
+      data$Buildings, data$Instructional.Rooms.2023.2024
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 6. Classroom Needs
+output$schooldetails_classroom_needs <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  buildable_val <- if(is.list(data$With_Buildable_space)) unlist(data$With_Buildable_space) else data$With_Buildable_space
   
-  # Get data from snapshot
-  current_data <- data_snapshot() 
-  if (is.null(current_data)) return()
+  df <- data.frame(
+    Metric = c("Classroom Requirement", "Estimated Shortage", "Major Repairs Needed", 
+               "Shifting Schedule", "Buildable Space Available"),
+    Value = as.character(c(
+      data$Classroom.Requirement, data$Est.CS, data$Major.Repair.2023.2024,
+      data$Shifting, buildable_val
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 7. Utilities & Facilities
+output$schooldetails_utilities <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("Electricity Source", "Water Source", "Ownership Type", 
+               "Total Seats", "Seats Shortage"),
+    Value = as.character(c(
+      data$ElectricitySource, data$WaterSource, data$OwnershipType,
+      data$Total.Seats.2023.2024, data$Total.Seats.Shortage.2023.2024
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 8. Non-Teaching Personnel
+output$schooldetails_ntp <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  df <- data.frame(
+    Metric = c("AO II Deployment Status", "PDO I Deployment", "COS Status"),
+    Value = as.character(c(
+      data$Clustering.Status, data$PDOI_Deployment, data$Outlier.Status
+    ))
+  )
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
+
+# 9. Specialization (JHS/SHS)
+output$schooldetails_specialization <- renderTable({
+  data <- selected_school_data(); req(nrow(data) > 0)
+  metric_labels <- c("English", "Mathematics", "Science", "Biological Sciences", 
+                     "Physical Sciences", "General Education", "Araling Panlipunan", 
+                     "TLE", "MAPEH", "Filipino", "ESP", "Agriculture", "ECE", "SPED")
   
-  selected_school_row <- current_data[idx, ]
-  school_id <- selected_school_row$SchoolID
-  
-  # Filter the main 'uni' dataset to get full details
-  data <- uni %>% filter(SchoolID == school_id)
-  
-  # 1. Zoom map to the selected school
-  leafletProxy("TextMapping") %>%
-    flyTo(
-      lng = data$Longitude,
-      lat = data$Latitude,
-      zoom = 15,
-      options = leafletOptions(duration = 0.5)
+  df <- if (!is.na(data$Modified.COC) && data$Modified.COC == "Purely ES") {
+    data.frame(Metric = "Note", Value = "Specialization data is not applicable for Purely Elementary Schools.")
+  } else {
+    data.frame(
+      Metric = metric_labels,
+      Value = as.character(c(
+        data$English, data$Mathematics, data$Science, data$Biological.Sciences,
+        data$Physical.Sciences, data$General.Ed, data$Araling.Panlipunan,
+        data$TLE, data$MAPEH, data$Filipino, data$ESP, data$Agriculture,
+        data$ECE, data$SPED
+      ))
     )
-  
-  # --- Helper function to bold content ---
-  make_bold <- function(df) {
-    df[] <- lapply(df, function(x) paste0("<strong>", x, "</strong>"))
-    return(df)
   }
-  
-  # --- RENDER THE 9 DETAILED TABLES ---
-  
-  # 1. Basic Information
-  output$schooldetails <- renderTable({
-    df <- data.frame(
-      Metric = c("School Name", "School ID", "Region", "Division", "District", "Municipality", 
-                 "Barangay", "School Head", "Position", "Curricular Offering", "Typology"),
-      Value = as.character(c(
-        data$School.Name, data$SchoolID, data$Region, data$Division, data$District, data$Municipality,
-        data$Barangay, data$School.Head.Name, data$SH.Position, data$Modified.COC, data$School.Size.Typology
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-  
-  # 2. Enrolment Profile
-  output$qs_enrolment <- renderTable({
-    df <- data.frame(
-      Level = c("Kinder", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
-                "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "TOTAL"),
-      Count = as.character(c(
-        data$Kinder, data$G1, data$G2, data$G3, data$G4, data$G5, data$G6,
-        data$G7, data$G8, data$G9, data$G10, data$G11, data$G12, data$TotalEnrolment
-      ))
-    )
-    df <- df[df$Count != "0" & !is.na(df$Count), ]
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-  
-=======
-  align = 'c', sanitize.text.function = function(x) x)
-  
-  # 2. Enrolment Profile
-  # Note: We reuse the output slot 'schooldetails_enrolment' if defined in UI, 
-  # BUT Quick Search UI usually uses 'schooldetails2', '3', etc.
-  # I will map them to the existing UI slots you have in 10_stride2_UI.R for Quick Search,
-  # adding new outputs if necessary.
-  # **CRITICAL:** You need to update 10_stride2_UI.R to match these new table slots if they differ.
-  # For now, I will use standard names and we will update the UI file next.
-  
-  output$qs_enrolment <- renderTable({
-    df <- data.frame(
-      Level = c("Kinder", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5", "Grade 6",
-                "Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "TOTAL"),
-      Count = as.character(c(
-        data$Kinder, data$G1, data$G2, data$G3, data$G4, data$G5, data$G6,
-        data$G7, data$G8, data$G9, data$G10, data$G11, data$G12, data$TotalEnrolment
-      ))
-    )
-    df <- df[df$Count != "0" & !is.na(df$Count), ]
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-  align = 'c', sanitize.text.function = function(x) x)
-  
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  # 3. Teacher Inventory
-  output$qs_teachers <- renderTable({
-    df <- data.frame(
-      Metric = c("Elementary Teachers", "JHS Teachers", "SHS Teachers", "TOTAL Teachers"),
-      Value = as.character(c(
-        data$ES.Teachers, data$JHS.Teachers, data$SHS.Teachers, data$TotalTeachers
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 4. Teacher Needs
-  output$qs_teacher_needs <- renderTable({
-    df <- data.frame(
-      Metric = c("ES Shortage", "JHS Shortage", "SHS Shortage", "TOTAL Shortage",
-                 "ES Excess", "JHS Excess", "SHS Excess", "TOTAL Excess"),
-      Value = as.character(c(
-        data$ES.Shortage, data$JHS.Shortage, data$SHS.Shortage, data$Total.Shortage,
-        data$ES.Excess, data$JHS.Excess, data$SHS.Excess, data$Total.Excess
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 5. Classroom Inventory
-  output$qs_classrooms <- renderTable({
-    df <- data.frame(
-      Metric = c("Total Buildings", "Total Instructional Rooms"),
-      Value = as.character(c(
-        data$Buildings, data$Instructional.Rooms.2023.2024
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 6. Classroom Needs
-  output$qs_classroom_needs <- renderTable({
-    buildable_val <- if(is.list(data$With_Buildable_space)) unlist(data$With_Buildable_space) else data$With_Buildable_space
-    df <- data.frame(
-      Metric = c("Classroom Requirement", "Estimated Shortage", "Major Repairs Needed", 
-                 "Shifting Schedule", "Buildable Space Available"),
-      Value = as.character(c(
-        data$Classroom.Requirement, data$Est.CS, data$Major.Repair.2023.2024,
-        data$Shifting, buildable_val
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 7. Utilities
-  output$qs_utilities <- renderTable({
-    df <- data.frame(
-      Metric = c("Electricity Source", "Water Source", "Ownership Type", 
-                 "Total Seats", "Seats Shortage"),
-      Value = as.character(c(
-        data$ElectricitySource, data$WaterSource, data$OwnershipType,
-        data$Total.Seats.2023.2024, data$Total.Seats.Shortage.2023.2024
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 8. NTP
-  output$qs_ntp <- renderTable({
-    df <- data.frame(
-      Metric = c("AO II Deployment Status", "PDO I Deployment", "COS Status"),
-      Value = as.character(c(
-        data$Clustering.Status, data$PDOI_Deployment, data$Outlier.Status
-      ))
-    )
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-  # 9. Specialization
-  output$qs_specialization <- renderTable({
-    metric_labels <- c("English", "Mathematics", "Science", "Biological Sciences", 
-                       "Physical Sciences", "General Education", "Araling Panlipunan", 
-                       "TLE", "MAPEH", "Filipino", "ESP", "Agriculture", "ECE", "SPED")
-    
-    df <- if (!is.na(data$Modified.COC) && data$Modified.COC == "Purely ES") {
-      data.frame(Metric = "Note", Value = "Specialization data is not applicable for Purely Elementary Schools.")
-    } else {
-      data.frame(
-        Metric = metric_labels,
-        Value = as.character(c(
-          data$English, data$Mathematics, data$Science, data$Biological.Sciences,
-          data$Physical.Sciences, data$General.Ed, data$Araling.Panlipunan,
-          data$TLE, data$MAPEH, data$Filipino, data$ESP, data$Agriculture,
-          data$ECE, data$SPED
-        ))
-      )
-    }
-    make_bold(df)
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
-<<<<<<< HEAD
-  align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
-=======
-  align = 'c', sanitize.text.function = function(x) x)
->>>>>>> 7f714524ef68abd40d41ad5776c2635f2ec3bb02
-  
-})
+  make_bold(df)
+}, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", 
+align = 'c', colnames = FALSE, sanitize.text.function = function(x) x)
