@@ -43,7 +43,8 @@ outputOptions(output, "current_drill_level", suspendWhenHidden = FALSE)
 hr_metric_choices <- list(
   `School Information` = c("Number of Schools" = "Total.Schools",
                            "School Size Typology" = "School.Size.Typology", 
-                           "Curricular Offering" = "Modified.COC"),
+                           "Curricular Offering" = "Modified.COC",
+                           "Shifting" = "Shifting"),
   `Teaching Data` = c("Number of Teachers" = "TotalTeachers", 
                       "Teacher Excess" = "Total.Excess", 
                       "Teacher Shortage" = "Total.Shortage"),
@@ -66,7 +67,6 @@ infra_metric_choices <- list(
                   "Classroom Requirement" =  "Classroom.Requirement",
                   "Last Mile School" = "LMS.School",
                   "Classroom Shortage" = "Classroom.Shortage",
-                  "Shifting" = "Shifting",
                   "Number of Buildings" = "Buildings",
                   "Buildable Space" = "Buildable_Space", # --- This was your correct change
                   "Major Repairs Needed" = "Major.Repair.2023.2024"),
@@ -203,8 +203,8 @@ all_selected_metrics <- reactive({
 
 # --- Define Metric Groups ---
 teacher_metrics <- c("TotalTeachers", "Total.Shortage", "Total.Excess")
-school_metrics <- c("Total.Schools","School.Size.Typology", "Modified.COC") 
-classroom_metrics <- c("Instructional.Rooms.2023.2024", "Classroom.Requirement", "Shifting","Classroom.Shortage","Buildable_Space")
+school_metrics <- c("Total.Schools","School.Size.Typology", "Modified.COC","Shifting") 
+classroom_metrics <- c("Instructional.Rooms.2023.2024", "Classroom.Requirement","Classroom.Shortage","Buildable_Space")
 enrolment_metrics <- c("G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10", "G11", "G12")
 buildingcondition_metrics <- c("Building.Count_Condemned...For.Demolition","Building.Count_For.Completion",             
                                "Building.Count_For.Condemnation","Building.Count_Good.Condition",             
@@ -1108,15 +1108,11 @@ output$dashboard_grid <- renderUI({
               rename(Count = Value) 
           } else {
             
-            # --- *** START: FIX 2 (AVOID SELF-FILTERING) *** ---
-            
-            # 1. Get the current state
+            # --- PREVIOUS LOGIC (Keep your existing filtering logic here) ---
             state <- global_drill_state()
-            
-            # 2. Start with the base 'uni' data
             data_for_this_plot <- uni
             
-            # 3. Apply GEOGRAPHIC filters (from filtered_data() logic)
+            # ... (Keep all your existing Geographic and Categorical filters here) ...
             if (state$level == "Division") {
               req(state$region); data_for_this_plot <- data_for_this_plot %>% filter(Region == state$region)
             } else if (state$level == "Municipality") { 
@@ -1127,7 +1123,7 @@ output$dashboard_grid <- renderUI({
               req(state$region, state$division, state$municipality, state$legislative_district); data_for_this_plot <- data_for_this_plot %>% filter(Region == state$region, Division == state$division, Municipality == state$municipality, Legislative.District == state$legislative_district)
             }
             
-            # 4. Apply ALL OTHER CATEGORICAL filters (i.e., every filter *except* the one for the current plot)
+            # ... (Keep the rest of your categorical filters here: COC, Typology, etc.) ...
             if (!is.null(state$coc_filter) && current_metric != "Modified.COC") { data_for_this_plot <- data_for_this_plot %>% filter(Modified.COC == state$coc_filter) }
             if (!is.null(state$typology_filter) && current_metric != "School.Size.Typology") { data_for_this_plot <- data_for_this_plot %>% filter(School.Size.Typology == state$typology_filter) }
             if (!is.null(state$shifting_filter) && current_metric != "Shifting") { data_for_this_plot <- data_for_this_plot %>% filter(Shifting == state$shifting_filter) }
@@ -1136,15 +1132,11 @@ output$dashboard_grid <- renderUI({
             if (!is.null(state$ownership_filter) && current_metric != "OwnershipType") { data_for_this_plot <- data_for_this_plot %>% filter(OwnershipType == state$ownership_filter) }
             if (!is.null(state$electricity_filter) && current_metric != "ElectricitySource") { data_for_this_plot <- data_for_this_plot %>% filter(ElectricitySource == state$electricity_filter) }
             if (!is.null(state$water_filter) && current_metric != "WaterSource") { data_for_this_plot <- data_for_this_plot %>% filter(WaterSource == state$water_filter) }
-            if (!is.null(state$buildable_filter) && current_metric != "Buildable_Space") { data_for_this_plot <- data_for_this_plot %>% filter(Buildable_Space == state$buildable_filter) } # <-- NEW
+            if (!is.null(state$buildable_filter) && current_metric != "Buildable_Space") { data_for_this_plot <- data_for_this_plot %>% filter(Buildable_Space == state$buildable_filter) } 
             
-            # 5. Now, count based on this *specially filtered* data
             if (nrow(data_for_this_plot) > 0) {
-              
-              # --- SPECIAL HANDLING for list-column ---
               if (current_metric == "Buildable_Space") {
                 bar_data <- data_for_this_plot %>%
-                  # Unlist the column to make it countable
                   mutate(Category = unlist(!!sym(current_metric))) %>% 
                   count(Category, name = "Count") %>%
                   filter(!is.na(Category))
@@ -1155,15 +1147,17 @@ output$dashboard_grid <- renderUI({
                   rename(Category = !!sym(current_metric)) 
               }
             }
-            # --- *** END: FIX 2 *** ---
           }
           
           if (nrow(bar_data) == 0) {
             return(plot_ly() %>% layout(title = list(text = plot_title, x = 0.05), annotations = list(x = 0.5, y = 0.5, text = "No data available", showarrow = FALSE)))
           }
           
-          # --- UPDATED CASE_WHEN (Added Buildable_Space) ---
-          # <-- BUG FIX (Change 3): Make plot source names dynamic
+          # --- NEW: Calculate Max Range with Buffer ---
+          max_val <- max(bar_data$Count, na.rm = TRUE)
+          x_range_limit <- c(0, max_val * 1.35) # Adds 35% buffer to the right
+          
+          # Source name generation (Keep existing)
           plot_source <- dplyr::case_when(
             current_metric == "Modified.COC" ~ paste0("coc_pie_click_", current_trigger_val),
             current_metric == "School.Size.Typology" ~ paste0("typology_bar_click_", current_trigger_val),
@@ -1173,7 +1167,7 @@ output$dashboard_grid <- renderUI({
             current_metric == "OwnershipType" ~ paste0("ownership_click_", current_trigger_val),
             current_metric == "ElectricitySource" ~ paste0("electricity_click_", current_trigger_val),
             current_metric == "WaterSource" ~ paste0("water_click_", current_trigger_val),
-            current_metric == "Buildable_Space" ~ paste0("buildable_click_", current_trigger_val), # <-- NEW
+            current_metric == "Buildable_Space" ~ paste0("buildable_click_", current_trigger_val),
             current_metric == "LMS.School" ~ paste0("lms_click_", current_trigger_val),
             TRUE ~ paste0("plot_source_", current_metric, "_", current_trigger_val) 
           )
@@ -1183,12 +1177,13 @@ output$dashboard_grid <- renderUI({
             type = "bar", orientation = 'h', name = current_metric_name,
             texttemplate = '%{x:,.0f}', textposition = "outside",
             cliponaxis = FALSE, textfont = list(color = '#000000', size = 10),
-            source = plot_source # <-- MODIFIED
+            source = plot_source
           ) %>%
             layout(
               title = list(text = plot_title, x = 0.05), 
               yaxis = list(title = "", categoryorder = "total descending", autorange = "reversed"),
-              xaxis = list(title = "Total Count", tickformat = ',.0f'),
+              # --- MODIFIED XAXIS ---
+              xaxis = list(title = "Total Count", tickformat = ',.0f', range = x_range_limit), 
               legend = list(orientation = 'h', xanchor = 'center', x = 0.5, y = 1.02),
               margin = list(l = 150) 
             )
@@ -1236,6 +1231,7 @@ output$dashboard_grid <- renderUI({
   })
   
   # --- 2. Create the UI Card Elements ---
+  # --- 3. Create the UI Card Elements ---
   plot_cards <- map(selected_metrics, ~{
     current_metric <- .x
     # --- *** MODIFIED (Change 3 of 3): Use clean_metric_choices *** ---
@@ -1244,15 +1240,29 @@ output$dashboard_grid <- renderUI({
     
     # --- UPDATED IF CONDITION (Added Buildable_Space) ---
     if (current_metric %in% c("Modified.COC", "School.Size.Typology", "Shifting", "Total.Schools", "Completion", 
-                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource")) { # <-- NEW
+                              "Outlier.Status", "Clustering.Status", "OwnershipType", "ElectricitySource", "WaterSource", "Buildable_Space")) { # <-- ADDED Buildable_Space here
       
       total_count <- tryCatch({
         if (current_metric == "Total.Schools") {
           metric_plot_data %>% filter(Metric == "Total.Schools") %>% pull(Value) %>% sum(na.rm = TRUE)
         } else {
-          # --- FIX for summary card ---
-          # We need to count from the *filtered* data, not the "self-filtered" data
-          nrow(filtered_data()) 
+          # --- FIX START: Accurate Count Excluding NAs ---
+          # Get the data currently filtered by drilldown/sidebar
+          data_for_count <- filtered_data()
+          
+          if (current_metric == "Buildable_Space") {
+            # Special handling for list-column: Unlist and count non-NAs
+            data_for_count %>%
+              mutate(Category = unlist(Buildable_Space)) %>%
+              filter(!is.na(Category)) %>%
+              nrow()
+          } else {
+            # Standard columns: Filter where the specific metric is NOT NA, then count
+            data_for_count %>%
+              filter(!is.na(!!sym(current_metric))) %>%
+              nrow()
+          }
+          # --- FIX END ---
         }
       }, error = function(e) { 0 }) 
       
@@ -1294,7 +1304,7 @@ output$dashboard_grid <- renderUI({
       card_header(current_metric_name),
       card_body(
         tags$div(style = "text-align: center; padding-bottom: 10px;", summary_card_content),
-        plotlyOutput(paste0("plot_", .x), width = "100%", height = "100%") # <-- ADD THIS
+        plotlyOutput(paste0("plot_", .x), width = "100%", height = "100%") 
       )
     )
   })
