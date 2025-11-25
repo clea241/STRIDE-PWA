@@ -28,7 +28,8 @@ library(RPostgres)
 library(pool)
 library(reactable)
 library(reactablefmtr)
-
+library(webshot)
+library(tinytex)
 
 # HROD Data Upload
 

@@ -1809,3 +1809,67 @@ get_chatbot_response <- function(query, df) {
 
 # Ensure UI updates even when tab is hidden
 outputOptions(output, "chat_ui_container", suspendWhenHidden = FALSE)
+
+# --- REPORT GENERATOR (Fixed for Categorical Data) ---
+output$generate_report <- downloadHandler(
+  filename = function() {
+    paste("STRIDE_Report_", Sys.Date(), ".html", sep = "")
+  },
+  content = function(file) {
+    # 1. Notify User
+    id <- showNotification("Generating Report...", duration = NULL, closeButton = FALSE)
+    on.exit(removeNotification(id), add = TRUE)
+    
+    # 2. Prepare Template
+    tempReport <- file.path(tempdir(), "report.Rmd")
+    file.copy("report.Rmd", tempReport, overwrite = TRUE)
+    
+    # 3. INTELLIGENT DATA PREPARATION
+    # We grab the standard summary data first
+    final_data <- summarized_data_long()
+    
+    # We also need the raw data to calculate text categories correctly
+    raw_df <- filtered_data()
+    selected_metrics <- all_selected_metrics()
+    
+    # Loop through selected metrics to fix the "Text" ones
+    for (m in selected_metrics) {
+      
+      # Check if the column exists and is strictly CHARACTER/TEXT (not numeric)
+      if (m %in% names(raw_df) && is.character(raw_df[[m]])) {
+        
+        # Calculate the breakdown (Count of Small, Medium, Large, etc.)
+        cat_summary <- raw_df %>%
+          group_by(.data[[m]]) %>%
+          tally(name = "Value") %>%
+          rename(Category = .data[[m]]) %>%
+          mutate(Metric = m) %>%
+          mutate(Category = ifelse(is.na(Category) | Category == "", "Unknown", Category)) %>%
+          ungroup() %>%
+          select(Category, Metric, Value)
+        
+        # Remove the "Bad" calculation (sum of text) from the standard data
+        final_data <- final_data %>% filter(Metric != m)
+        
+        # Add our "Good" calculation
+        final_data <- bind_rows(final_data, cat_summary)
+      }
+    }
+    
+    # 4. Define Parameters
+    params_list <- list(
+      data = final_data,                # The fixed data
+      metrics = selected_metrics,   
+      state = global_drill_state(),       
+      metric_names = clean_metric_choices 
+    )
+    
+    # 5. Render
+    rmarkdown::render(
+      tempReport,
+      output_file = file,
+      params = params_list,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)

@@ -633,8 +633,16 @@ output$STRIDE2 <- renderUI({
               ),
               multiple = TRUE, 
               options = shinyWidgets::pickerOptions(actionsBox = TRUE, deselectAllText = "Clear All", selectAllText = "Select All", liveSearch = TRUE, noneSelectedText = "Select Programs...")
-            )
-          ), # End sidebar
+            ),
+            # --- INSERT BUTTON 1 HERE ---
+            tags$div(
+              style = "margin-bottom: 15px;",
+              downloadButton("generate_report", "Generate Report", 
+                             class = "btn-danger", 
+                             style = "width: 100%; background-color: #CE1126; border: none; font-weight: bold;")
+            ),
+          ),  
+          # ----------------------------# End sidebar
           bslib::navset_card_tab(
             full_screen = TRUE,
             bslib::nav_panel(
@@ -702,6 +710,14 @@ output$STRIDE2 <- renderUI({
                             actionButton("add_adv_filter_btn", "Add Variable Filter", 
                                          icon = icon("plus"), class = "btn-default w-100 mb-3"),
                             hr(),
+                            # # --- INSERT BUTTON 2 HERE ---
+                            # tags$div(
+                            #   style = "margin-bottom: 15px;",
+                            #   downloadButton("generate_report_adv", "Generate Report", 
+                            #                  class = "btn-danger", 
+                            #                  style = "width: 100%; background-color: #CE1126; border: none; font-weight: bold;")
+                            # ),
+                            # ----------------------------
                             actionButton("adv_analytics_run", "Apply Filters & Plot", 
                                          icon = icon("play"), class = "btn-primary w-100")
           ),
@@ -746,6 +762,14 @@ output$STRIDE2 <- renderUI({
             width = 300,
             tags$div(class = "preset-filters", style = "text-align: left; padding-left: 20px;", tags$h5("Position Presets"), awesomeCheckboxGroup(inputId = "plantilla_presets", label = "Click to filter positions:", choices = c("Teacher", "Master Teacher", "School Principal", "Head Teacher", "Guidance Coordinator", "Guidance Counselor", "Engineer", "Administrative Officer", "Administrative Assistant"), inline = FALSE, status = "primary")),
             hr(), 
+            # --- INSERT BUTTON 3 HERE ---
+            tags$div(
+              style = "margin-bottom: 15px; margin-right: 20px;",
+              downloadButton("generate_report_plantilla", "Generate Report", 
+                             class = "btn-danger", 
+                             style = "width: 100%; background-color: #CE1126; border: none; font-weight: bold;")
+            ),
+            # ----------------------------
             h5("Select Positions"),
             pickerInput(inputId = "selected_positions", label = NULL, choices = sort(unique(dfGMIS$Position)), selected = head(sort(unique(dfGMIS$Position)), 1), multiple = TRUE, options = list(`actions-box` = TRUE, `dropup-auto` = FALSE, `live-search` = TRUE, `live-search-style` = 'contains')),
             br(),
@@ -764,13 +788,22 @@ output$STRIDE2 <- renderUI({
               card(card_header("Filter by Category"), height = 400, card_body(pickerInput(inputId = "selected_category", label = NULL, choices = all_categories, selected = all_categories, multiple = TRUE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, header = "Select Categories", title = "No Category Selected", selectedTextFormat = "count > 3", dropupAuto = FALSE, dropup = FALSE), choicesOpt = list()))),
               card(card_header("Filter by Region"), height = 400, card_body(pickerInput(inputId = "selected_region", label = NULL, choices = all_regions, selected = all_regions, multiple = TRUE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, header = "Select Regions", title = "No Region Selected", selectedTextFormat = "count > 3", dropupAuto = FALSE, dropup = FALSE), choicesOpt = list()))),
               card(card_header("Filter by Division"), height = 400, card_body(pickerInput(inputId = "selected_division", label = NULL, choices = NULL, selected = NULL, multiple = TRUE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, header = "Select Divisions", title = "No Division Selected", selectedTextFormat = "count > 3", dropupAuto = FALSE, dropup = FALSE), choicesOpt = list())))
-            )
+            ),
+            # --- INSERT BUTTON 4 HERE ---
+            tags$div(
+              style = "margin-bottom: 15px;",
+              downloadButton("generate_report_infra", "Generate Report", 
+                             class = "btn-danger", 
+                             style = "width: 100%; background-color: #CE1126; border: none; font-weight: bold;")
+            ),
+            # ----------------------------# End Dashboard nav_menu
           ),
           tagList( 
             h3("Allocation and Completion Overview"),
             layout_columns( 
               col_widths = c(12,12,12,12),
               navset_card_tab(
+                  id = "infra_tabs",
                 nav_panel("Allocation Overview", layout_columns(card(full_screen = TRUE, plotlyOutput("allocationStackedBar", height = "100%"), fill = TRUE, fillable = TRUE, max_height = "auto", height = 500))),
                 nav_panel("Completion Overview", card(full_screen = TRUE, plotlyOutput("completionByCategoryPlot", height = "100%"), fill = TRUE, fillable = TRUE, max_height = "auto", height = 500))
               ),
@@ -782,7 +815,7 @@ output$STRIDE2 <- renderUI({
           )
         ) 
       )
-    ), # End Dashboard nav_menu
+    ),  
     
     # --- QUICK SCHOOL SEARCH ---
     # --- QUICK SCHOOL SEARCH (UPDATED UI) ---
@@ -1085,7 +1118,7 @@ output$STRIDE2 <- renderUI({
                tags$button(class = "drawer-tab-btn active", onclick = "switchTab('tab-guide', this)", "Manual"),
                tags$button(class = "drawer-tab-btn", onclick = "switchTab('tab-glossary', this)", "Glossary"),
                tags$button(class = "drawer-tab-btn", onclick = "switchTab('tab-faq', this)", "FAQs"),
-               tags$button(class = "drawer-tab-btn", onclick = "switchTab('tab-chat', this)", style="color: #FFC107; font-weight: bold;", icon("robot"), " STRIDER")
+               # tags$button(class = "drawer-tab-btn", onclick = "switchTab('tab-chat', this)", style="color: #FFC107; font-weight: bold;", icon("robot"), " STRIDER")
       ),
       
       # --- 3. CUSTOM CSS/JS FOR TABS & CHAT ---
