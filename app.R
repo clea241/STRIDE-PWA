@@ -28,6 +28,7 @@ library(RPostgres)
 library(pool)
 library(reactable)
 library(reactablefmtr)
+library(rintrojs)
 
 
 # HROD Data Upload
@@ -369,6 +370,7 @@ server <- function(input, output, session) {
   #source("server_parts/33_stride2_guest_UI.R", local = TRUE)
   source("server_parts/34_home.R", local = TRUE)
   source("server_parts/AdvancedAnalytics_Server.R", local = TRUE)
+  source("server_parts/35_quick_tour.R", local = TRUE)
   
   
   # COMMENTED PARTS

@@ -213,6 +213,7 @@ output$STRIDE2 <- renderUI({
     # --- QUICK START BUTTON (Styled) ---
     nav_item(
       tags$a(
+        id = "quick_start_btn",
         href = "javascript:void(0);",
         onclick = "toggleHelpDrawer()", 
         class = "nav-link",
@@ -788,6 +789,7 @@ output$STRIDE2 <- renderUI({
     # --- QUICK SCHOOL SEARCH (UPDATED UI) ---
     nav_panel(
       title = tags$b("Quick Search"),
+      value = "quick_search_tab",
       icon = bs_icon("search"),
       layout_sidebar(
         sidebar = sidebar(
@@ -864,6 +866,7 @@ output$STRIDE2 <- renderUI({
     # --- RESOURCE MAPPING ---
     nav_panel(
       title = tags$b("Resource Mapping"),
+      value = "resource_mapping_tab",
       icon = bs_icon("map"),
       layout_sidebar(
         sidebar = sidebar(

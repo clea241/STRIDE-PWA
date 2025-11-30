@@ -32,6 +32,8 @@ ui_head <- tagList(
     tags$meta(name = "viewport", content = "width=device-width, initial-scale=1.0, maximum-scale=3.0")
   ),
   
+  
+  
   # Font tags (also part of the head, but good to keep together)
   tags$head(
     tags$link(
@@ -44,5 +46,8 @@ ui_head <- tagList(
     }
   "))
   ),
+  
+  rintrojs::introjsUI(),
+  
   tags$link(rel = "preconnect", href = "https://fonts.gstatic.com", crossorigin = "anonymous")
 )

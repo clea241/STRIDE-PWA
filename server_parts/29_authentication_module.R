@@ -69,20 +69,11 @@ authentication_server <- function(input, output, session, user_status,
               actionButton(
                 "guest_mode_btn", 
                 "Continue as Guest", 
-                
-                # --- 💡 MODIFICATION ---
-                class = "w-100 mt-3", # <-- Removed btn-guest, just keep layout classes
-                
-                # Add the CSS styles directly here.
-                # I've used the light blue/teal color from your CSS file.
+                class = "w-100 mt-3", 
                 style = "background-color: #e0a800; border-color: #e0a800; color: white; font-weight: 600;" 
-                # --- END MODIFICATION ---
               )
             ),
             
-            
-            
-            # actionButton(ns("guest_mode"), "Continue as Guest", class = "btn-secondary w-100 mt-2"),
             div(
               class = "login-logos-bottom",
               tags$img(src = "logo2.png", class = "bottom-logo"),
@@ -166,10 +157,6 @@ authentication_server <- function(input, output, session, user_status,
         )
       )
     }
-    
-    
-    
-    
   })
   
   # --- 3️⃣ STATION-SPECIFIC INPUTS ---
@@ -198,7 +185,6 @@ authentication_server <- function(input, output, session, user_status,
     file_positions <- unique(dfGMISPosCat$Position)
     
     # --- MANUALLY ADD NEW POSITIONS HERE ---
-    # Add your missing position inside this c() vector
     all_positions <- c(file_positions, "Others (COS)", "Technical Assistant")
     
     # Sort the combined list
@@ -206,21 +192,6 @@ authentication_server <- function(input, output, session, user_status,
     
     selectInput(ns("position"), "Position:", choices = positions)
   })
-  
-  # observe({
-  #   pos <- input[[ns("position")]]
-  #   show_list <- c("Engineer II", "Engineer III", "Engineer IV", "Engineer V", 
-  #                  "Human Resources Management Officer I")
-  #   
-  #   if (!is.null(pos) && pos %in% show_list) {
-  #     shinyjs::showElement(id = ns("engineer_hr_panel"), anim = TRUE)
-  #   } else {
-  #     shinyjs::hideElement(id = ns("engineer_hr_panel"), anim = TRUE)
-  #   }
-  # })
-  
-  
-  
   
   # --- 6️⃣ DYNAMIC DROPDOWNS (Region -> Division -> District -> School) ---
   observeEvent(input$region, {
@@ -246,39 +217,6 @@ authentication_server <- function(input, output, session, user_status,
                 choices = sort(unique(uni$SchoolID[uni$Legislative.District == input$district])))
   })
   
-  # --- 7️⃣ SUBMIT HANDLER FOR ENGINEER / HR INFO ---
-  observeEvent(input$submit_engineer_hr, {
-    req(input$user_name, input$user_email, input$region, input$division, input$district, input$school_id)
-    new_entry <- data.frame(
-      Timestamp = Sys.time(),
-      Name = input$user_name,
-      Email = input$user_email,
-      Position = input$position,
-      Region = input$region,
-      Division = input$division,
-      Legislative_District = input$district,
-      School_ID = input$school_id,
-      stringsAsFactors = FALSE
-    )
-    tryCatch({
-      googlesheets4::sheet_append(sheet_url, data = new_user)
-      print("✅ Successfully appended to Google Sheet")
-      
-      db_trigger(db_trigger() + 1)
-      
-      # Mark as registered and authenticated
-      register_success(TRUE)
-      user_status("authenticated")
-      authenticated_user(reg_user)
-      
-      showNotification("✅ Registration successful! Redirecting...", type = "message", duration = 4)
-      
-    }, error = function(e) {
-      showNotification(paste("❌ Error writing to sheet:", e$message), type = "error")
-    })
-    
-    
-  })
   
   # --- 8️⃣ LOGIN LOGIC ---
   observeEvent(input$do_login, {
@@ -325,9 +263,7 @@ authentication_server <- function(input, output, session, user_status,
   })
   
   
-  
-  
-  # --- 🔟 REGISTRATION LOGIC ---
+  # --- 🔟 REGISTRATION LOGIC (UPDATED WITH DUPLICATE CHECK) ---
   observeEvent(input$do_register, {
     print("🔔 Register button clicked")
     
@@ -337,7 +273,7 @@ authentication_server <- function(input, output, session, user_status,
     govlev <- input$govlev
     position <- input$position
     
-    # Validation
+    # --- Validation ---
     if (is.null(reg_user) || reg_user == "") {
       showNotification("❌ Please enter your DepEd email.", type = "error")
       return()
@@ -355,7 +291,21 @@ authentication_server <- function(input, output, session, user_status,
       return()
     }
     
-    # === Collect all registration data (including Engineer/HR fields) ===
+    # --- 🔒 NEW: DUPLICATE EMAIL CHECK ---
+    current_db <- user_database()
+    
+    # Ensure strict comparison (trim whitespace + lowercase)
+    existing_emails <- tolower(trimws(current_db$Email_Address))
+    new_email_clean <- tolower(trimws(reg_user))
+    
+    if (new_email_clean %in% existing_emails) {
+      showNotification("❌ This email is already registered. Please log in instead.", type = "error", duration = 5)
+      return() # Stop execution here
+    }
+    # -------------------------------------
+    
+    
+    # === Collect all registration data ===
     new_user <- data.frame(
       Registration_Date = as.character(Sys.time()),
       Email_Address = reg_user,
@@ -365,7 +315,7 @@ authentication_server <- function(input, output, session, user_status,
       Office = ifelse(govlev != "School", input$office_name, NA),
       Position = ifelse(!is.null(position) && position != "", position, NA),
       
-      # 👇 New columns for Engineer/HR (may be NA for others)
+      # Engineer/HR fields
       First_Name = ifelse(!is.null(input$first_name), input$first_name, NA),
       Middle_Name = ifelse(!is.null(input$middle_name), input$middle_name, NA),
       Last_Name = ifelse(!is.null(input$last_name), input$last_name, NA),
@@ -409,12 +359,11 @@ authentication_server <- function(input, output, session, user_status,
       nzchar(input$position)
     )
     
-    # Check if Engineer/HR panel is visible and collect required inputs
+    # Check if Engineer/HR panel is visible
     engineer_positions <- c("Engineer II", "Engineer III", "Engineer IV", "Engineer V", "Human Resources Management Officer I")
     is_engineer <- input$position %in% engineer_positions
     
     if (is_engineer) {
-      # Additional required fields for engineer/HR
       extra_filled <- all(
         nzchar(input$first_name),
         nzchar(input$last_name),
@@ -433,9 +382,4 @@ authentication_server <- function(input, output, session, user_status,
     enable_btn <- basic_filled && extra_filled
     shinyjs::toggleState(ns("do_register"), condition = enable_btn)
   })
-  
-  
 }
-
-# --- END OF AUTHENTICATION MODULE ---
-# ==========================================================
