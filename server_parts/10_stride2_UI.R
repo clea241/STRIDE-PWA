@@ -805,6 +805,7 @@ output$STRIDE2 <- renderUI({
             h5("Advanced Search"),
             textInput("text_advanced", "School Name (Optional):", placeholder = "Filter by name..."),
             hr(),
+            
             h5("Advanced Filters"),
             pickerInput(inputId = "qss_region", label = "Filter by Region:", choices = sort(unique(uni$Region)), selected = NULL, multiple = FALSE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Regions")),
             pickerInput(inputId = "qss_division", label = "Filter by Division:", choices = sort(unique(uni$Division)), selected = NULL, multiple = FALSE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Divisions")),
@@ -824,8 +825,18 @@ output$STRIDE2 <- renderUI({
           # Column 3: Detailed Breakdown (Full Width)
           card(
             full_screen = TRUE,
-            card_header(div(strong("School Details"), tags$span(em("(Select a school from the table above)"), style = "font-size: 0.7em; color: grey;"))),
             
+            # --- HEADER WITH BUTTON ---
+            card_header(
+              div(
+                class = "d-flex justify-content-between align-items-center",
+                div(
+                  strong("School Details"), 
+                  tags$span(em("(Select a school from the table above)"), style = "font-size: 0.7em; color: grey; margin-left: 10px;")
+                ),
+                downloadButton("download_school_profile", "Download Summary", class = "btn-sm btn-danger")
+              )
+            ),
             tagList(
               layout_columns(
                 col_widths = c(6,6),
