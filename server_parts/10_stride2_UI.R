@@ -213,6 +213,7 @@ output$STRIDE2 <- renderUI({
     # --- QUICK START BUTTON (Styled) ---
     nav_item(
       tags$a(
+        id = "quick_start_btn",
         href = "javascript:void(0);",
         onclick = "toggleHelpDrawer()", 
         class = "nav-link",
@@ -821,6 +822,7 @@ output$STRIDE2 <- renderUI({
     # --- QUICK SCHOOL SEARCH (UPDATED UI) ---
     nav_panel(
       title = tags$b("Quick Search"),
+      value = "quick_search_tab",
       icon = bs_icon("search"),
       layout_sidebar(
         sidebar = sidebar(
@@ -836,6 +838,7 @@ output$STRIDE2 <- renderUI({
             h5("Advanced Search"),
             textInput("text_advanced", "School Name (Optional):", placeholder = "Filter by name..."),
             hr(),
+            
             h5("Advanced Filters"),
             pickerInput(inputId = "qss_region", label = "Filter by Region:", choices = sort(unique(uni$Region)), selected = NULL, multiple = FALSE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Regions")),
             pickerInput(inputId = "qss_division", label = "Filter by Division:", choices = sort(unique(uni$Division)), selected = NULL, multiple = FALSE, options = pickerOptions(actionsBox = TRUE, liveSearch = TRUE, title = "All Divisions")),
@@ -863,8 +866,18 @@ output$STRIDE2 <- renderUI({
           # Column 3: Detailed Breakdown (Full Width)
           card(
             full_screen = TRUE,
-            card_header(div(strong("School Details"), tags$span(em("(Select a school from the table above)"), style = "font-size: 0.7em; color: grey;"))),
             
+            # --- HEADER WITH BUTTON ---
+            card_header(
+              div(
+                class = "d-flex justify-content-between align-items-center",
+                div(
+                  strong("School Details"), 
+                  tags$span(em("(Select a school from the table above)"), style = "font-size: 0.7em; color: grey; margin-left: 10px;")
+                ),
+                downloadButton("download_school_profile", "Download Summary", class = "btn-sm btn-danger")
+              )
+            ),
             tagList(
               layout_columns(
                 col_widths = c(6,6),
@@ -905,6 +918,7 @@ output$STRIDE2 <- renderUI({
     # --- RESOURCE MAPPING ---
     nav_panel(
       title = tags$b("Resource Mapping"),
+      value = "resource_mapping_tab",
       icon = bs_icon("map"),
       layout_sidebar(
         sidebar = sidebar(
