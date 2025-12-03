@@ -155,15 +155,18 @@
 /* Add this to style the new logo image */
 .app-logo {
     width: 100%;             /* Responsive width */
-    max-width: 150px;        /* Maximum width so it doesn't look huge on desktop */
+    max-width: 170px;        /* Maximum width so it doesn't look huge on desktop */
     height: auto;            /* Maintain aspect ratio */
     display: block;          /* Allows centering */
     margin: 0 auto 15px auto; /* Centers it and adds space below */
-    object-fit: contain;     /* Ensures image isn't stretched */
+    object-fit: contain; 
+    box-shadow: #444;    /* Ensures image isn't stretched */
 }
 
 /* Update header to remove old text margins if needed */
 .login-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+
+    font-weight: 700;
 }

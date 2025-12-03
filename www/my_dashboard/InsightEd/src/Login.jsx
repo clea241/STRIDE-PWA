@@ -1,7 +1,7 @@
 // src/Login.jsx
 
 import React, { useState } from 'react';
-import logo from './assets/InsightEd.png';
+import logo from './assets/InsightEd1.png';
 import { auth, googleProvider, db } from './firebase';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
