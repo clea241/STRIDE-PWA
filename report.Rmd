@@ -17,6 +17,10 @@ library(plotly)
 library(htmltools) # Required for structuring the report
 ```
 
+<style type="text/css"> @media print { /* This forces the browser to respect colors */ body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+/* Prevents graphs from being cut between pages */ .plotly-graph-div { break-inside: avoid; page-break-inside: avoid; } } </style>
+
 ### Report Details
 
 **Drill-down Level:** `r params$state$level`
@@ -41,6 +45,10 @@ get_metric_data <- function(data, target_metric, metric_list) {
   return(matched_data)
 }
 
+# --- DEFINING THE INVALID LIST ---
+# This list controls what gets removed from the report
+invalid_categories <- c("n/a", "na", "#n/a", "unknown", "")
+
 # --- 1. GENERATE EXECUTIVE SUMMARY (PARAGRAPH FORM) ---
 
 summary_sentences <- list()
@@ -52,6 +60,14 @@ for (m in params$metrics) {
   if(length(clean_name) == 0) clean_name <- m
   
   dat <- get_metric_data(params$data, m, params$metric_names)
+  
+  # --- FILTER OUT N/A, UNKNOWN, #N/A and INVALID DATA ---
+  dat <- dat %>% 
+    filter(
+      !is.na(Category),
+      !is.na(Value),
+      !tolower(trimws(Category)) %in% invalid_categories # Strict filtering
+    )
   
   if (nrow(dat) > 0) {
     top_row <- dat %>% 
@@ -93,42 +109,65 @@ for (i in seq_along(params$metrics)) {
 
   plot_data <- get_metric_data(params$data, current_metric, params$metric_names)
 
+  # --- FILTER OUT N/A, UNKNOWN, #N/A and INVALID DATA ---
+  plot_data <- plot_data %>% 
+    filter(
+      !is.na(Category),
+      !is.na(Value),
+      !tolower(trimws(Category)) %in% invalid_categories # Strict filtering
+    )
+
   if (nrow(plot_data) == 0) {
     # Empty State
     graph_list[[i]] <- tagList(
       h3(clean_name),
-      p(em("No data available for this selection.")),
+      p(em("No data available for this selection after filtering invalid categories.")),
       hr()
     )
   } else {
     
-    # --- A. Generate Description Text ---
-    # Find statistics for the narrative
-    top_cat <- plot_data %>% arrange(desc(Value)) %>% slice(1)
-    bottom_cat <- plot_data %>% arrange(Value) %>% slice(1)
+    # --- A. Generate Description Text (TOP 3 & BOTTOM 3) ---
     total_val <- sum(plot_data$Value, na.rm=TRUE)
+    
+    # Helper to format "Category (Value)"
+    fmt_cat <- function(cat, val) {
+      paste0(tags$b(cat), " (", format(val, big.mark=","), ")")
+    }
+    
+    # Get Top 3
+    top_rows <- plot_data %>% arrange(desc(Value)) %>% head(3)
+    top_str <- paste(mapply(fmt_cat, top_rows$Category, top_rows$Value), collapse=", ")
+    
+    # Get Bottom 3 (Lowest first)
+    bottom_rows <- plot_data %>% arrange(Value) %>% head(3)
+    bottom_str <- paste(mapply(fmt_cat, bottom_rows$Category, bottom_rows$Value), collapse=", ")
     
     description_text <- paste0(
       "The chart above illustrates the distribution for ", tags$b(clean_name), ". ",
-      "The data indicates that ", tags$b(top_cat$Category), " holds the highest share with ", 
-      format(top_cat$Value, big.mark=","), " instances. ",
-      "Conversely, ", tags$b(bottom_cat$Category), " represents the lowest value in this dataset with ", 
-      format(bottom_cat$Value, big.mark=","), ". ",
+      "The data indicates that the top categories with the highest share are: ", top_str, ". ",
+      "Conversely, the categories with the lowest values in this dataset are: ", bottom_str, ". ",
       "The total recorded count across all displayed categories is ", format(total_val, big.mark=","), "."
     )
 
     # --- B. Generate Plot ---
+    # Sort data for Graph (Ascending Value puts largest bar at top in Plotly Horizontal)
+    plot_data_sorted <- plot_data %>% arrange(Value)
+    plot_data_sorted$Category <- factor(plot_data_sorted$Category, levels = plot_data_sorted$Category)
+
     p <- plot_ly(
-      data = plot_data,
+      data = plot_data_sorted,
       y = ~Category,
       x = ~Value,
       type = 'bar',
       orientation = 'h',
-      marker = list(color = '#003366')
+      marker = list(color = '#003366'),
+      text = ~format(Value, big.mark=","), # Add Numbers
+      textposition = 'outside',            # Position numbers at the end
+      cliponaxis = FALSE                   # Allow numbers to show even if they cross axis
     ) %>%
       layout(
         title = "",
-        xaxis = list(title = "Value"),
+        xaxis = list(title = "Value", automargin = TRUE),
         yaxis = list(title = "")
       )
     
