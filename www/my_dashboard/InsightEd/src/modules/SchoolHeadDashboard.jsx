@@ -1,5 +1,3 @@
-// src/SchoolHeadDashboard.jsx
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import for navigation
 import { Swiper, SwiperSlide } from 'swiper/react'; // For slider functionality
