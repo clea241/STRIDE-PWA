@@ -1,88 +1,106 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import for navigation
-import { Swiper, SwiperSlide } from 'swiper/react'; // For slider functionality
-import 'swiper/css'; // Import swiper styles
-// Optional: import modules if you need pagination, navigation, etc.
-// import { Pagination, Navigation } from 'swiper/modules';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
 import BottomNav from './BottomNav';
+import PageTransition from '../components/PageTransition'; // Import Transition
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const SchoolHeadDashboard = () => {
     const navigate = useNavigate();
+    const [userName, setUserName] = useState('School Head'); // Default
 
-    // Handler for the new button
+    // Non-blocking fetch
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setUserName(docSnap.data().firstName);
+                }
+            }
+        };
+        fetchUserData();
+    }, []);
+
     const goToSchoolForms = () => {
-        // NOTE: Assuming '/school-forms' is the route for your school forms page
         navigate('/school-forms');
     };
 
-    // Data for the slider content
     const sliderContent = [
         { 
             id: 1, 
-            title: "Welcome Back!", 
-            emoji: "👋", 
-            description: "A quick summary of key performance indicators and school metrics will appear here soon." 
+            title: "School Metrics", 
+            emoji: "📊", 
+            description: "Enrollment stats are up by 5% this semester. Keep it up!" 
         },
         { 
             id: 2, 
-            title: "Upcoming Deadlines", 
-            emoji: "🗓️", 
-            description: "Check required submissions, personnel evaluation schedules, and resource allocation reviews." 
+            title: "Pending Approvals", 
+            emoji: "📝", 
+            description: "You have 3 facility requests waiting for your review." 
         },
-        { 
-            id: 3, 
-            title: "Resource Management", 
-            emoji: "📚", 
-            description: "View inventory, budget status, and facility maintenance requests." 
-        }
     ];
 
     return (
-        <div className="min-h-screen bg-[#FFFBEA] p-5 pb-24 md:p-10 font-sans">
-            
-            <div className="max-w-4xl mx-auto">
-                {/* Blue Title */}
-                <h1 className="text-[#004A99] text-2xl md:text-3xl font-bold mb-3">
-                    🏫 Welcome to the School Head Dashboard!
-                </h1>
-                
-                {/* --- Swipeable Welcome Content (The Slider) --- */}
-                <Swiper
-                    // modules={[Pagination]} // Uncomment if you use modules
-                    spaceBetween={10}
-                    slidesPerView={1}
-                    // pagination={{ clickable: true }} // Uncomment for pagination dots
-                    className="mb-6 rounded-xl shadow-lg border border-[#f0e6d2] bg-white overflow-hidden"
-                >
-                    {sliderContent.map((item) => (
-                        <SwiperSlide key={item.id} className="p-6">
-                            <h2 className="text-xl font-semibold mb-2 text-[#004A99] flex items-center">
-                                <span className="mr-2 text-2xl">{item.emoji}</span> {item.title}
-                            </h2>
-                            <p className="text-gray-700 leading-relaxed">
-                                {item.description}
-                            </p>
-                        </SwiperSlide>
-                    ))}
-                </Swiper>
+        <PageTransition>
+            <div className="min-h-screen bg-[#FFFBEA] p-5 pb-24 md:p-10 font-sans">
+                <div className="max-w-4xl mx-auto">
+                    {/* Dynamic Greeting */}
+                    <div className="mb-6">
+                        <h1 className="text-[#004A99] text-3xl font-bold">
+                            Hello, {userName}! 👋
+                        </h1>
+                        <p className="text-gray-500 text-sm mt-1">
+                            Here's what's happening at your school today.
+                        </p>
+                    </div>
+                    
+                    {/* Slider */}
+                    <Swiper
+                        spaceBetween={10}
+                        slidesPerView={1}
+                        className="mb-6 rounded-xl shadow-lg border border-[#f0e6d2] bg-white overflow-hidden"
+                    >
+                        {sliderContent.map((item) => (
+                            <SwiperSlide key={item.id} className="p-6">
+                                <h2 className="text-xl font-semibold mb-2 text-[#004A99] flex items-center">
+                                    <span className="mr-2 text-2xl">{item.emoji}</span> {item.title}
+                                </h2>
+                                <p className="text-gray-700 leading-relaxed">
+                                    {item.description}
+                                </p>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
 
-                {/* --- Action Button --- */}
-                <button 
-                    onClick={goToSchoolForms} 
-                    className="w-full bg-[#CC0000] text-white font-bold py-3 px-4 rounded-xl text-lg shadow-md hover:bg-[#A30000] transition duration-200 focus:outline-none focus:ring-4 focus:ring-[#CC0000]/50"
-                >
-                    📝 Fill Up School Forms
-                </button>
+                    {/* Action Button */}
+                    <button 
+                        onClick={goToSchoolForms} 
+                        className="w-full bg-[#CC0000] text-white font-bold py-4 px-4 rounded-xl text-lg shadow-md hover:bg-[#A30000] transition duration-200 flex items-center justify-center gap-2"
+                    >
+                        <span>📋</span> Manage School Forms
+                    </button>
 
-                {/* Red Description Text (Re-purposed or Kept) */}
-                <p className="text-[#CC0000] text-base md:text-lg bg-white p-5 rounded-xl shadow-sm border border-[#f0e6d2] leading-relaxed mt-6">
-                    This is where you oversee school operations, resources, and educational programs.
-                </p>
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                            <span className="text-2xl font-bold text-[#004A99]">12</span>
+                            <p className="text-xs text-gray-500 uppercase font-semibold">Active Teachers</p>
+                        </div>
+                        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center">
+                            <span className="text-2xl font-bold text-[#CC0000]">340</span>
+                            <p className="text-xs text-gray-500 uppercase font-semibold">Students</p>
+                        </div>
+                    </div>
+                </div>
+
+                <BottomNav homeRoute="/schoolhead-dashboard" />
             </div>
-
-            {/* Navigation Footer */}
-            <BottomNav homeRoute="/schoolhead-dashboard" />
-        </div>
+        </PageTransition>
     );
 };
 
