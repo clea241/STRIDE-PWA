@@ -1,68 +1,46 @@
+// src/BottomNav.jsx
 
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-// Using generic emojis for now, but you can import icons from react-icons here
-// import { FaUser, FaChartLine, FaHome } from 'react-icons/fa';
 
 const BottomNav = ({ homeRoute }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // specific styles for the footer container
-    const navStyle = {
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        width: '100%',
-        height: '60px',
-        backgroundColor: '#fff',
-        borderTop: '1px solid #ddd',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        zIndex: 1000,
-        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
-    };
+    // Helper to determine if a tab is active
+    const isActive = (path) => location.pathname === path;
 
-    const itemStyle = (isActive) => ({
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '12px',
-        color: isActive ? '#004A99' : '#888', // Active = DepEd Blue, Inactive = Grey
-        background: 'none',
-        border: 'none',
-        cursor: 'pointer'
-    });
+    // Common button class
+    const navBtnClass = "flex flex-col items-center justify-center w-full h-full border-none bg-transparent cursor-pointer transition-colors";
 
     return (
-        <div style={navStyle}>
+        <div className="fixed bottom-0 left-0 w-full h-[70px] bg-white border-t border-gray-200 flex justify-around items-center z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] pb-1">
+            
             {/* Activity Button */}
             <button 
-                style={itemStyle(location.pathname === '/activities')} 
+                className={`${navBtnClass} ${isActive('/activities') ? 'text-[#004A99]' : 'text-gray-400'}`}
                 onClick={() => navigate('/activities')}
             >
-                <span style={{ fontSize: '20px' }}>⚡</span>
-                <span>Activity</span>
+                <span className="text-2xl mb-1">⚡</span>
+                <span className="text-xs font-medium">Activity</span>
             </button>
 
             {/* Dashboard (Home) Button */}
             <button 
-                style={itemStyle(location.pathname === homeRoute)} 
+                className={`${navBtnClass} ${isActive(homeRoute) ? 'text-[#004A99]' : 'text-gray-400'}`}
                 onClick={() => navigate(homeRoute)}
             >
-                <span style={{ fontSize: '20px' }}>🏠</span>
-                <span>Dashboard</span>
+                <span className="text-2xl mb-1">🏠</span>
+                <span className="text-xs font-medium">Dashboard</span>
             </button>
 
             {/* Profile Button */}
             <button 
-                style={itemStyle(location.pathname === '/profile')} 
+                className={`${navBtnClass} ${isActive('/profile') ? 'text-[#004A99]' : 'text-gray-400'}`}
                 onClick={() => navigate('/profile')}
             >
-                <span style={{ fontSize: '20px' }}>👤</span>
-                <span>Profile</span>
+                <span className="text-2xl mb-1">👤</span>
+                <span className="text-xs font-medium">Profile</span>
             </button>
         </div>
     );
