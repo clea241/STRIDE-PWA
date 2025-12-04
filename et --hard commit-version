@@ -1,0 +1,14 @@
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{2}: reset: moving to HEAD
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{3}: reset: moving to HEAD
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{4}: reset: moving to HEAD
+[33m7e01d7e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{5}: pull: Merge made by the 'ort' strategy.
+[33macfe9f6[m HEAD@{6}: pull: Merge made by the 'ort' strategy.
+[33m49ef477[m HEAD@{7}: commit: ds
+[33mb312e95[m HEAD@{8}: commit: nsvvsd
+[33m91d8204[m HEAD@{9}: pull: Fast-forward
+[33mef262eb[m HEAD@{10}: commit: profile nav
+[33mad08a8a[m HEAD@{11}: pull: Fast-forward
+[33m6aeddc5[m HEAD@{12}: commit: pr
+[33m714b195[m HEAD@{13}: clone: from https://github.com/clea241/STRIDE-PWA.git
