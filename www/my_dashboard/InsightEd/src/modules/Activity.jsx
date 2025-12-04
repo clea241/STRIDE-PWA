@@ -1,11 +1,11 @@
-// src/Activity.jsx
-
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../firebase'; 
 import { doc, getDoc } from 'firebase/firestore';
 import BottomNav from './BottomNav';
+import PageTransition from '../components/PageTransition'; // Import Transition
 
 const Activity = () => {
+    // Default to '/' to ensure the BottomNav renders something immediately
     const [homeRoute, setHomeRoute] = useState('/');
 
     useEffect(() => {
@@ -34,13 +34,20 @@ const Activity = () => {
     };
 
     return (
-        <div style={{ padding: '20px', paddingBottom: '80px' }}>
-            <h1>Recent Activities</h1>
-            <p>Here are your latest updates and tasks.</p>
-            
-            {/* Dynamic Footer */}
-            <BottomNav homeRoute={homeRoute} />
-        </div>
+        <PageTransition>
+            <div style={{ padding: '20px', paddingBottom: '80px', minHeight: '100vh', backgroundColor: '#F0F0F0' }}>
+                <h1 className="text-2xl font-bold text-[#004A99] mb-2">Recent Activities</h1>
+                <p className="text-gray-600 mb-4">Here are your latest updates and tasks.</p>
+                
+                {/* Placeholder for Activities Content */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center text-gray-400">
+                    No recent activities found.
+                </div>
+
+                {/* Dynamic Footer */}
+                <BottomNav homeRoute={homeRoute} />
+            </div>
+        </PageTransition>
     );
 };
 

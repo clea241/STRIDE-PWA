@@ -1,20 +1,13 @@
-// src/modules/UserProfile.jsx
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-// FIX 1: Go up one level (../) to find firebase
 import { auth, db } from '../firebase'; 
 import { doc, getDoc } from 'firebase/firestore';
-
-// FIX 2: BottomNav is in the same folder, so ./ is correct
 import BottomNav from './BottomNav';
+import PageTransition from '../components/PageTransition'; // Import Transition
 
 const UserProfile = () => {
-    // ... (The rest of the logic remains exactly the same) ...
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [homeRoute, setHomeRoute] = useState('/');
 
     useEffect(() => {
@@ -30,7 +23,6 @@ const UserProfile = () => {
                     setHomeRoute(getDashboardPath(data.role));
                 }
             }
-            setLoading(false);
         };
         fetchData();
     }, []);
@@ -52,73 +44,77 @@ const UserProfile = () => {
         }
     };
 
-    // Helper to get initials
     const getInitials = (first, last) => {
         return `${first?.charAt(0) || ''}${last?.charAt(0) || ''}`.toUpperCase();
     };
 
-    if (loading) return <div style={{textAlign:'center', marginTop: '50px'}}>Loading Profile...</div>;
+    // Removed the "if loading return..." block to allow instant render
 
     return (
-        <div style={styles.container}>
-            {/* HERO SECTION */}
-            <div style={styles.header}>
-                <div style={styles.avatarCircle}>
-                    {getInitials(userData?.firstName, userData?.lastName)}
-                </div>
-                <h2 style={styles.name}>{userData?.firstName} {userData?.lastName}</h2>
-                <span style={styles.roleBadge}>{userData?.role}</span>
-            </div>
-
-            {/* DETAILS CARD */}
-            <div style={styles.card}>
-                <h3 style={styles.sectionTitle}>📋 Employment Details</h3>
-                
-                <div style={styles.row}>
-                    <span style={styles.label}>Email</span>
-                    <span style={styles.value}>{userData?.email}</span>
-                </div>
-
-                <div style={styles.divider}></div>
-
-                <h3 style={styles.sectionTitle}>📍 Area of Assignment</h3>
-                <div style={styles.row}>
-                    <span style={styles.label}>Region</span>
-                    <span style={styles.value}>{userData?.region}</span>
-                </div>
-                <div style={styles.row}>
-                    <span style={styles.label}>Province</span>
-                    <span style={styles.value}>{userData?.province}</span>
-                </div>
-                <div style={styles.row}>
-                    <span style={styles.label}>City/Mun</span>
-                    <span style={styles.value}>{userData?.city}</span>
-                </div>
-                {userData?.barangay && (
-                    <div style={styles.row}>
-                        <span style={styles.label}>Barangay</span>
-                        <span style={styles.value}>{userData?.barangay}</span>
+        <PageTransition>
+            <div style={styles.container}>
+                {/* HERO SECTION */}
+                <div style={styles.header}>
+                    <div style={styles.avatarCircle}>
+                        {userData ? getInitials(userData.firstName, userData.lastName) : "..."}
                     </div>
-                )}
-            </div>
+                    <h2 style={styles.name}>
+                        {userData ? `${userData.firstName} ${userData.lastName}` : "Loading..."}
+                    </h2>
+                    <span style={styles.roleBadge}>
+                        {userData?.role || "User"}
+                    </span>
+                </div>
 
-            {/* ACTIONS */}
-            <div style={styles.actionContainer}>
-                <button style={styles.editButton} onClick={() => alert("Edit Profile Coming Soon!")}>
-                    ✏️ Edit Profile
-                </button>
-                <button style={styles.logoutButton} onClick={handleLogout}>
-                    🚪 Logout
-                </button>
-            </div>
+                {/* DETAILS CARD */}
+                <div style={styles.card}>
+                    <h3 style={styles.sectionTitle}>👤 Employment Details</h3>
+                    
+                    <div style={styles.row}>
+                        <span style={styles.label}>Email</span>
+                        <span style={styles.value}>{userData?.email || "..."}</span>
+                    </div>
 
-            {/* FOOTER */}
-            <BottomNav homeRoute={homeRoute} />
-        </div>
+                    <div style={styles.divider}></div>
+
+                    <h3 style={styles.sectionTitle}>📍 Area of Assignment</h3>
+                    <div style={styles.row}>
+                        <span style={styles.label}>Region</span>
+                        <span style={styles.value}>{userData?.region || "..."}</span>
+                    </div>
+                    <div style={styles.row}>
+                        <span style={styles.label}>Province</span>
+                        <span style={styles.value}>{userData?.province || "..."}</span>
+                    </div>
+                    <div style={styles.row}>
+                        <span style={styles.label}>City/Mun</span>
+                        <span style={styles.value}>{userData?.city || "..."}</span>
+                    </div>
+                    {userData?.barangay && (
+                        <div style={styles.row}>
+                            <span style={styles.label}>Barangay</span>
+                            <span style={styles.value}>{userData.barangay}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* ACTIONS */}
+                <div style={styles.actionContainer}>
+                    <button style={styles.editButton} onClick={() => alert("Edit Profile Coming Soon!")}>
+                        ✏️ Edit Profile
+                    </button>
+                    <button style={styles.logoutButton} onClick={handleLogout}>
+                        🚪 Logout
+                    </button>
+                </div>
+
+                {/* FOOTER */}
+                <BottomNav homeRoute={homeRoute} />
+            </div>
+        </PageTransition>
     );
 };
 
-// ... (Styles remain the same) ...
 const styles = {
     container: { minHeight: '100vh', backgroundColor: '#f5f7fa', paddingBottom: '80px', fontFamily: 'Segoe UI, sans-serif' },
     header: { background: 'linear-gradient(135deg, #004A99 0%, #003366 100%)', padding: '40px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', borderBottomLeftRadius: '30px', borderBottomRightRadius: '30px', boxShadow: '0 4px 15px rgba(0,0,0,0.1)', color: 'white' },
