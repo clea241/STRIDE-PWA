@@ -1,217 +1,145 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const SchoolForms = () => {
     const navigate = useNavigate();
 
-    // State to manage which form is currently open in the popup
-    const [activeForm, setActiveForm] = useState(null);
-
-    // Placeholder data for the list of forms
-    const formsList = [
+    // --- CONFIGURATION: Data & Routes (Status Removed) ---
+    const formsData = [
         { 
             id: 1, 
-            name: "Facility Maintenance Request (FMR)", 
-            description: "Submit requests for facility and equipment repair.",
-            status: "Pending",
-            emoji: "🛠️"
+            name: "School Profile", 
+            emoji: "🏫",
+            description: "General school identification and classification.",
+            route: "/school-profile", 
         },
         { 
             id: 2, 
-            name: "Personnel Evaluation Form (PEF)", 
-            description: "Annual evaluation and assessment of teaching staff.",
-            status: "Complete",
-            emoji: "🧑‍🏫"
+            name: "School Information (Head)", 
+            emoji: "👨‍💼",
+            description: "Contact details and position of the School Head.",
+            route: "/school-information", 
         },
         { 
             id: 3, 
-            name: "Quarterly Budget Report (QBR)", 
-            description: "Report on expenditures and budget utilization for the quarter.",
-            status: "Draft",
-            emoji: "💰"
+            name: "Enrolment per Grade Level", 
+            emoji: "📊",
+            description: "Total number of enrollees for Grades 1 through 12.",
+            route: "/enrolment", 
         },
         { 
             id: 4, 
-            name: "Learning Resource Inventory (LRI)", 
-            description: "Update and manage school textbooks and material inventory.",
-            status: "Not Started",
-            emoji: "📖"
+            name: "Organized Classes", 
+            emoji: "🗂️",
+            description: "Number of sections/classes organized per grade level.",
+            route: "/organized-classes", 
+        },
+        { 
+            id: 5, 
+            name: "Teaching Personnel", 
+            emoji: "👩‍🏫",
+            description: "Summary of teaching staff by level.",
+            route: "/teaching-personnel", 
+        },
+        { 
+            id: 6, 
+            name: "School Infrastructure", 
+            emoji: "🏗️",
+            description: "Status of classrooms and buildings.",
+            route: "/school-infrastructure", 
+        },
+        { 
+            id: 7, 
+            name: "School Resources", 
+            emoji: "💻",
+            description: "Inventory of equipment and facilities.",
+            route: "/school-resources", 
+        },
+        { 
+            id: 8, 
+            name: "Teacher Specialization", 
+            emoji: "🎓",
+            description: "Count of teachers by subject specialization.",
+            route: "/teacher-specialization", 
         },
     ];
 
-    // Handler to open the modal
     const handleFormClick = (form) => {
-        setActiveForm(form);
-    };
-
-    // Handler to close the modal
-    const closeModal = () => {
-        setActiveForm(null);
-    };
-
-    // Handler for form submission (Placeholder logic)
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        alert(`Successfully submitted data for: ${activeForm.name}`);
-        closeModal();
+        navigate(form.route); 
     };
 
     const goBack = () => {
-        navigate(-1); 
+        navigate('/schoolhead-dashboard');
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans p-4 md:p-8 pb-24 relative"> 
-            <div className="max-w-4xl mx-auto">
-                
-                {/* --- Header Section --- */}
-                <header className="flex items-center justify-between mb-6">
+        <div className="min-h-screen bg-slate-50 font-sans pb-24 relative overflow-hidden">
+            
+            {/* Background Decorative Blob */}
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-100/40 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none"></div>
+
+            {/* --- TOP HEADER --- */}
+            <div className="bg-[#004A99] pt-10 pb-24 px-6 rounded-b-[3rem] shadow-xl relative z-10">
+                <div className="max-w-6xl mx-auto flex items-center gap-5">
                     <button 
                         onClick={goBack} 
-                        className="text-[#004A99] hover:text-[#003B7A] transition duration-150 text-2xl"
-                        aria-label="Go Back"
+                        className="bg-white/10 hover:bg-white/20 text-white rounded-xl p-3 transition-all duration-300 backdrop-blur-md border border-white/10 group"
                     >
-                        &larr;
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5 group-hover:-translate-x-1 transition-transform">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                        </svg>
                     </button>
-                    <h1 className="text-3xl font-bold text-[#CC0000]">
-                        School Forms
-                    </h1>
-                    <div className="w-6"></div> 
-                </header>
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="h-1 w-8 bg-[#FDB913] rounded-full"></span>
+                            <p className="text-blue-100 text-xs font-bold tracking-widest uppercase">Department of Education</p>
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">School Forms</h1>
+                    </div>
+                </div>
+            </div>
 
-                <p className="text-gray-600 mb-6 text-center md:text-left">
-                    Click on a card below to fill out the specific form details.
-                </p>
-
-                {/* --- Forms List Grid --- */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {formsList.map((form) => (
+            {/* --- MAIN CONTENT CONTAINER --- */}
+            <div className="px-6 -mt-16 relative z-20 max-w-6xl mx-auto">
+                
+                {/* --- FORMS GRID --- */}
+                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                    {formsData.map((form) => (
                         <div 
                             key={form.id}
-                            onClick={() => handleFormClick(form)}
-                            className="bg-white p-5 rounded-xl shadow-lg border-l-4 border-[#004A99] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                            onClick={() => handleFormClick(form)} 
+                            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 cursor-pointer group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
                         >
-                            <div className="flex items-center mb-2">
-                                <span className="text-2xl mr-2">{form.emoji}</span>
-                                <h2 className="text-lg font-semibold text-gray-800 leading-tight">{form.name}</h2>
+                            {/* Decorative Top Accent Line (Blue default, Red on hover) */}
+                            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-100 to-blue-50 group-hover:from-[#CC0000] group-hover:to-[#FF5555] transition-all duration-500"></div>
+
+                            <div className="flex items-start justify-between mb-4">
+                                {/* Icon Container */}
+                                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-slate-100 group-hover:scale-110 group-hover:bg-blue-50 transition-all duration-300">
+                                    {form.emoji}
+                                </div>
+                                
+                                {/* Arrow Indicator (Replaces Status Badge) */}
+                                <div className="text-gray-300 group-hover:text-[#CC0000] transition-colors duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                                    </svg>
+                                </div>
                             </div>
-                            <p className="text-sm text-gray-500 mb-3">{form.description}</p>
                             
-                            <span className={`text-xs font-medium px-3 py-1 rounded-full ${
-                                form.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                form.status === 'Complete' ? 'bg-green-100 text-green-800' :
-                                form.status === 'Draft' ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-200 text-gray-700'
-                            }`}>
-                                Status: {form.status}
-                            </span>
+                            {/* Text Content */}
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800 leading-tight mb-2 group-hover:text-[#004A99] transition-colors">
+                                    {form.name}
+                                </h2>
+                                <p className="text-sm text-gray-500 leading-relaxed">
+                                    {form.description}
+                                </p>
+                            </div>
                         </div>
                     ))}
                 </div>
-
-                {/* --- Empty State / Note --- */}
-                <div className="mt-8 p-6 bg-white border-t-2 border-[#CC0000] rounded-xl shadow-md text-center">
-                    <p className="text-sm text-[#CC0000] font-medium">
-                        Need to start a new form? Click on any card to begin the process.
-                    </p>
-                </div>
-
             </div>
-
-            {/* --- POP-OUT MODAL (The Form) --- */}
-            {activeForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm transition-opacity">
-                    
-                    {/* Modal Content */}
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all scale-100">
-                        
-                        {/* Modal Header */}
-                        <div className="bg-[#004A99] p-4 flex justify-between items-center text-white">
-                            <h2 className="text-lg font-bold flex items-center">
-                                <span className="mr-2 text-2xl">{activeForm.emoji}</span> 
-                                {activeForm.name}
-                            </h2>
-                            <button 
-                                onClick={closeModal}
-                                className="text-white hover:text-gray-300 text-3xl leading-none focus:outline-none"
-                            >
-                                &times;
-                            </button>
-                        </div>
-
-                        {/* Modal Body (The Input Fields) */}
-                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                            
-                            {/* Field: Date */}
-                            <div>
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Date of Submission
-                                </label>
-                                <input 
-                                    type="date" 
-                                    required
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A99] focus:border-transparent transition"
-                                />
-                            </div>
-
-                            {/* Field: Subject/Title */}
-                            <div>
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Subject / Title
-                                </label>
-                                <input 
-                                    type="text" 
-                                    placeholder="e.g., Repair for Room 101 AC"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A99] focus:border-transparent transition"
-                                />
-                            </div>
-
-                            {/* Field: Priority Select */}
-                            <div>
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Priority Level
-                                </label>
-                                <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A99] bg-white">
-                                    <option>Low</option>
-                                    <option>Normal</option>
-                                    <option>High</option>
-                                    <option>Urgent / Critical</option>
-                                </select>
-                            </div>
-
-                            {/* Field: Description Textarea */}
-                            <div>
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Details & Description
-                                </label>
-                                <textarea 
-                                    rows="4" 
-                                    placeholder="Enter the specific details required for this form..."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#004A99] focus:border-transparent transition resize-none"
-                                ></textarea>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex justify-end space-x-3 pt-4 border-t border-gray-100 mt-4">
-                                <button 
-                                    type="button" 
-                                    onClick={closeModal}
-                                    className="px-5 py-2 rounded-lg text-gray-600 font-medium hover:bg-gray-100 transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    type="submit" 
-                                    className="px-5 py-2 rounded-lg bg-[#CC0000] text-white font-bold hover:bg-[#A30000] shadow-md transition transform active:scale-95"
-                                >
-                                    Submit Form
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
         </div>
     );
 };
