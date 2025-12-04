@@ -25,6 +25,7 @@ const Register = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     
+    
     // Form Data State
     const [formData, setFormData] = useState({
         firstName: '',
